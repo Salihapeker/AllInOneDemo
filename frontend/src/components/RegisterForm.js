@@ -10,7 +10,7 @@ const RegisterForm = () => {
   const handleRegister = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/register", { email, password });
+      await axios.post("/api/register", { email, password });
       setMessage("Kayıt başarılı!");
     } catch (error) {
       setMessage("Kayıt başarısız. Tekrar deneyin.");

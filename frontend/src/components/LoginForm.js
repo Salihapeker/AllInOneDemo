@@ -10,7 +10,7 @@ const LoginForm = () => {
   const handleLogin = async (e) => {
     e.preventDefault();
     try {
-      const response = await axios.post("/api/login", { email, password });
+      await axios.post("/api/login", { email, password });
       setMessage("Giriş başarılı!");
       // Giriş sonrası yapılacaklar: token saklama, sayfa yönlendirme vb.
     } catch (error) {
