@@ -1,11 +1,14 @@
 import React from "react";
 import RegisterForm from "../components/RegisterForm";
+import "./PageStyles.css";
 
 const RegisterPage = () => {
   return (
-    <div>
-      <h1>Kayıt Sayfası</h1>
-      <RegisterForm />
+    <div className="page-container">
+      <h1 className="page-header">Kayıt Sayfası</h1>
+      <div className="form-wrapper">
+        <RegisterForm />
+      </div>
     </div>
   );
 };

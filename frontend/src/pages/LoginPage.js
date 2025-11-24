@@ -1,11 +1,14 @@
 import React from "react";
 import LoginForm from "../components/LoginForm";
+import "./PageStyles.css";
 
 const LoginPage = () => {
   return (
-    <div>
-      <h1>Giriş Sayfası</h1>
-      <LoginForm />
+    <div className="page-container">
+      <h1 className="page-header">Giriş Sayfası</h1>
+      <div className="form-wrapper">
+        <LoginForm />
+      </div>
     </div>
   );
 };

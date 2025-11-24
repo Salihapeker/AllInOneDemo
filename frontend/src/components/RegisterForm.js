@@ -20,22 +20,30 @@ const RegisterForm = () => {
   return (
     <form onSubmit={handleRegister}>
       <h2>Kayıt Ol</h2>
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        required
-      />
-      <input
-        type="password"
-        placeholder="Şifre"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-      />
+      <div className="input-group">
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+      </div>
+      <div className="input-group">
+        <input
+          type="password"
+          placeholder="Şifre"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          required
+        />
+      </div>
       <button type="submit">Kaydol</button>
-      {message && <p>{message}</p>}
+      {message && (
+        <p className={message.includes("başarılı") ? "success" : "error"}>
+          {message}
+        </p>
+      )}
     </form>
   );
 };
