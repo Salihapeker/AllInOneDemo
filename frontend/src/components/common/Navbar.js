@@ -96,7 +96,7 @@ export default function Navbar() {
               {t("register")}
             </Link>
           ) : (
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div className="user-actions">
               <Link to="/profile" className="btn btn-ghost">
                 {t("profile")}
               </Link>

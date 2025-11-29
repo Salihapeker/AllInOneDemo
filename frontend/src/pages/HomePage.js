@@ -325,32 +325,6 @@ const HomePage = () => {
         .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
         .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
 
-        @keyframes fadeIn {
-          from {
-            opacity: 0;
-            transform: translateY(10px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        /* Loading spinner */
-        .loading-spinner {
-          width: 48px;
-          height: 48px;
-          border: 4px solid #F4EEEC;
-          border-top-color: #6DBF8C;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-          margin: 40px auto;
-        }
-
-        @keyframes spin {
-          to { transform: rotate(360deg); }
-        }
-
         /* CTA Button */
         .cta-section {
           text-align: center;

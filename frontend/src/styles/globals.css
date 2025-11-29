@@ -364,6 +364,13 @@ html[data-theme="dark"] .lang-select {
   box-shadow: 0 8px 24px rgba(109, 191, 140, 0.4);
 }
 
+/* User actions in header */
+.user-actions {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 /* Buttons (global) */
 .btn {
   display: inline-flex;
