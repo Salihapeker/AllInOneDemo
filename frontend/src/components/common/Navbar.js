@@ -7,7 +7,7 @@ import "../../styles/globals.css";
 /*
   Navbar (updated)
   - Sticky, minimal, no heavy blue strip
-  - Login/Register moved to the very top/right
+  - Login button removed, only green "Kayıt Ol" button when not logged in
   - Language select & theme toggle included
 */
 
@@ -19,8 +19,6 @@ export default function Navbar() {
   const loggedIn = !!(
     localStorage.getItem("token") || localStorage.getItem("access_token")
   );
-  const userRole = localStorage.getItem("role") || null;
-  const userEmail = localStorage.getItem("userEmail") || null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -32,98 +30,52 @@ export default function Navbar() {
   };
 
   return (
-    <header
-      className="app-header"
-      role="banner"
-      style={{ position: "sticky", top: 0, zIndex: 80 }}
-    >
-      <div
-        className="container"
-        style={{
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          gap: 12,
-        }}
-      >
-        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-          <Link
-            to="/"
-            style={{
-              display: "flex",
-              alignItems: "center",
-              gap: 12,
-              textDecoration: "none",
-            }}
-          >
-            <div
-              className="brand-tile"
-              aria-hidden
-              style={{ width: 48, height: 48 }}
-            >
-              4
-            </div>
-            <div
-              style={{
-                display: "flex",
-                flexDirection: "column",
-                lineHeight: 1,
-              }}
-            >
-              <span
-                className="display-stoewer"
-                style={{ fontSize: 16, color: "var(--brand-2)" }}
-              >
-                ALL IN ONE
-              </span>
-              <small className="text-muted" style={{ fontSize: 12 }}>
-                {t("for_you")}
-              </small>
-            </div>
-          </Link>
-        </div>
+    <header className="app-header" role="banner">
+      <div className="container header-inner">
+        {/* Sol: Logo */}
+        <Link to="/" className="brand">
+          <div className="brand-tile">4</div>
+          <div>
+            <span className="brand-text">ALL IN ONE</span>
+            <small className="brand-sub">{t("for_you")}</small>
+          </div>
+        </Link>
 
-        <nav
-          className="desktop-only"
-          aria-label="Main navigation"
-          style={{ display: "flex", alignItems: "center", gap: 12 }}
-        >
+        {/* Orta: Menü */}
+        <nav className="nav desktop-only" aria-label="Main navigation">
           <NavLink
             to="/"
-            className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            className={({ isActive }) => (isActive ? "nav-link nav-active" : "nav-link")}
           >
             {t("home")}
           </NavLink>
           <NavLink
             to="/services"
-            className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            className={({ isActive }) => (isActive ? "nav-link nav-active" : "nav-link")}
           >
             {t("services")}
           </NavLink>
           <NavLink
             to="/about"
-            className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            className={({ isActive }) => (isActive ? "nav-link nav-active" : "nav-link")}
           >
             {t("about")}
           </NavLink>
           <NavLink
             to="/contact"
-            className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            className={({ isActive }) => (isActive ? "nav-link nav-active" : "nav-link")}
           >
             {t("contact")}
           </NavLink>
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Sağ: Dil + Tema + Kayıt Ol */}
+        <div className="header-actions">
           <select
+            className="lang-select"
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
             aria-label="language"
-            style={{
-              padding: 6,
-              borderRadius: 8,
-              border: "1px solid var(--border)",
-            }}
           >
             <option value="tr">TR</option>
             <option value="de">DE</option>
@@ -131,43 +83,25 @@ export default function Navbar() {
           </select>
 
           <button
-            aria-label="Toggle theme"
-            className="btn btn-ghost"
+            className="theme-indicator"
             onClick={toggleTheme}
+            aria-label="Toggle theme"
             title={theme === "dark" ? "Açık moda geç" : "Koyu moda geç"}
-            style={{ padding: "6px 10px" }}
           >
-            {theme === "dark" ? "🌙" : "☀️"}
+            {theme === "light" ? "🌞" : "🌙"}
           </button>
 
           {!loggedIn ? (
-            <>
-              <Link
-                to="/login"
-                className="btn btn-ghost"
-                style={{ padding: "8px 12px" }}
-              >
-                {t("login")}
-              </Link>
-              <Link
-                to="/register"
-                className="btn btn-primary"
-                style={{ padding: "8px 14px" }}
-              >
-                {t("register")}
-              </Link>
-            </>
+            <Link to="/register" className="btn-register">
+              {t("register")}
+            </Link>
           ) : (
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Link
-                to="/profile"
-                className="btn btn-ghost"
-                style={{ padding: "6px 10px" }}
-              >
+              <Link to="/profile" className="btn btn-ghost">
                 {t("profile")}
               </Link>
               <button className="btn btn-outline" onClick={handleLogout}>
-                Çıkış
+                {t("logout")}
               </button>
             </div>
           )}

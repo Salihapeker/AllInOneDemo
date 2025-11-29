@@ -21,12 +21,13 @@
 
 /* Design tokens */
 :root {
-  --brand-1: #364f53;
-  --brand-2: #2f3d46;
-  --accent-1: #7ea683; /* softened green */
-  --accent-2: #4b7a63; /* darker green */
-  --bg: #f7f3f2;
-  --card-bg: #ffffff;
+  --brand-1: #364F53;
+  --brand-2: #2F3D46;
+  --accent-1: #6DBF8C;  /* Ana yeşil */
+  --accent-2: #4A9D6F;  /* Koyu yeşil */
+  --accent-light: #A8DDB5;
+  --bg: #F9F1F1;
+  --card-bg: #FFFFFF;
   --text: var(--brand-2);
   --muted: rgba(51, 65, 85, 0.6);
   --muted-2: rgba(47, 61, 70, 0.56);
@@ -44,8 +45,9 @@
 html[data-theme="dark"] {
   --brand-1: #bfd7cc;
   --brand-2: #e6f6ef;
-  --accent-1: #5ba88a;
-  --accent-2: #3e7a68;
+  --accent-1: #6DBF8C;
+  --accent-2: #4A9D6F;
+  --accent-light: #A8DDB5;
   --bg: #060809;
   --card-bg: #0d1112;
   --text: var(--brand-2);
@@ -187,24 +189,18 @@ body {
 
 /* ===== Header / Navbar (layout) ===== */
 .app-header {
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(54, 79, 83, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
   position: sticky;
   top: 0;
-  z-index: 90;
-  background: linear-gradient(
-    180deg,
-    rgba(247, 243, 242, 0.98),
-    rgba(247, 243, 242, 0.95)
-  );
-  border-bottom: 1px solid var(--border);
-  padding: 10px 0;
-  backdrop-filter: blur(6px);
+  z-index: 1000;
+  padding: 12px 0;
 }
 html[data-theme="dark"] .app-header {
-  background: linear-gradient(
-    180deg,
-    rgba(8, 10, 12, 0.74),
-    rgba(8, 10, 12, 0.45)
-  );
+  background: rgba(13, 17, 18, 0.95);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .header-inner {
@@ -237,6 +233,19 @@ html[data-theme="dark"] .app-header {
   background: linear-gradient(135deg, var(--accent-1), var(--accent-2));
   box-shadow: 0 10px 30px rgba(16, 24, 32, 0.06);
 }
+.brand .brand-text {
+  font-family: "Stoewer Ueberschrift", serif;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--brand-1);
+  display: block;
+}
+.brand .brand-sub,
+.brand small {
+  font-size: 12px;
+  color: var(--muted-2);
+  display: block;
+}
 .brand .title {
   font-family: "Stoewer Ueberschrift", serif;
   font-size: 15px;
@@ -254,31 +263,105 @@ html[data-theme="dark"] .app-header {
   gap: 10px;
 }
 .nav-link {
-  padding: 8px 10px;
-  border-radius: 8px;
-  font-weight: 600;
-  transition: background 0.12s ease, transform 0.12s ease;
-  color: var(--text);
+  color: #364F53;
   text-decoration: none;
+  font-weight: 600;
+  font-size: 15px;
+  padding: 8px 16px;
+  border-radius: 8px;
+  transition: all 0.3s ease;
 }
 .nav-link:hover {
-  background: rgba(75, 122, 99, 0.06);
-  transform: translateY(-2px);
+  color: #6DBF8C;
+  background: rgba(109, 191, 140, 0.1);
 }
-.nav-active {
-  background: linear-gradient(
-    90deg,
-    rgba(75, 122, 99, 0.12),
-    rgba(126, 166, 131, 0.06)
-  ) !important;
-  color: var(--text) !important;
+.nav-active,
+.nav-link.nav-active {
+  color: #4A9D6F;
+  background: rgba(109, 191, 140, 0.15);
+}
+
+html[data-theme="dark"] .nav-link {
+  color: var(--brand-2);
+}
+html[data-theme="dark"] .nav-link:hover {
+  color: #6DBF8C;
+  background: rgba(109, 191, 140, 0.1);
+}
+html[data-theme="dark"] .nav-active,
+html[data-theme="dark"] .nav-link.nav-active {
+  color: #6DBF8C;
+  background: rgba(109, 191, 140, 0.15);
 }
 
 /* Header actions */
 .header-actions {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
+}
+
+/* Dil seçici */
+.lang-select {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: 1px solid #E5E7EB;
+  background: white;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.lang-select:hover {
+  border-color: #6DBF8C;
+}
+
+html[data-theme="dark"] .lang-select {
+  background: var(--card-bg);
+  border-color: var(--border);
+  color: var(--text);
+}
+
+/* Tema indicator */
+.theme-indicator {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: none;
+  background: rgba(109, 191, 140, 0.1);
+  cursor: pointer;
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.theme-indicator:hover {
+  background: rgba(109, 191, 140, 0.2);
+  transform: scale(1.1);
+}
+
+/* YEŞİL Kayıt Ol butonu */
+.btn-register {
+  background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+  color: white;
+  padding: 10px 28px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 14px;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  display: inline-block;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(109, 191, 140, 0.25);
+}
+
+.btn-register:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(109, 191, 140, 0.4);
 }
 
 /* Buttons (global) */
@@ -293,19 +376,51 @@ html[data-theme="dark"] .app-header {
   border: none;
   background: transparent;
   color: var(--text);
+  text-decoration: none;
+  transition: all 0.3s ease;
 }
+
+/* Primary butonlar - YEŞİL */
 .btn-primary {
-  background: linear-gradient(90deg, var(--accent-2), var(--accent-1));
-  color: #fff;
+  background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
 }
+
+.btn-primary:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(109, 191, 140, 0.4);
+}
+
 .btn-ghost {
   background: transparent;
   color: var(--text);
 }
+
+.btn-ghost:hover {
+  background: rgba(109, 191, 140, 0.1);
+}
+
+/* Outline butonlar */
 .btn-outline {
   background: transparent;
-  border: 2px solid var(--border);
-  color: var(--text);
+  border: 2px solid #6DBF8C;
+  color: #4A9D6F;
+  padding: 10px 22px;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-outline:hover {
+  background: rgba(109, 191, 140, 0.1);
+  border-color: #4A9D6F;
 }
 
 /* ===== Hero (smaller, balanced) ===== */
@@ -603,4 +718,52 @@ textarea:focus {
 }
 .mb-6 {
   margin-bottom: 24px;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #F4EEEC;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6DBF8C, #4A9D6F);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #4A9D6F, #3A8B5F);
+}
+
+html[data-theme="dark"]::-webkit-scrollbar-track {
+  background: #0d1112;
+}
+
+/* Loading spinner */
+.loading-spinner {
+  width: 48px;
+  height: 48px;
+  border: 4px solid #F4EEEC;
+  border-top-color: #6DBF8C;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+/* FadeIn animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }

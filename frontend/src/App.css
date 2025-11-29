@@ -25,7 +25,7 @@
 }
 
 .App-link {
-  color: #61dafb;
+  color: #6DBF8C;
 }
 
 @keyframes App-logo-spin {
@@ -46,8 +46,8 @@
   flex: 1;
 }
 
-/* Navbar zaten güzel olacak */
+/* Navbar with green gradient */
 nav {
-  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  background: linear-gradient(135deg, #4A9D6F, #6DBF8C);
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
