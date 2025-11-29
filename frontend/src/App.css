@@ -36,3 +36,18 @@
     transform: rotate(360deg);
   }
 }
+
+/* src/styles/App.css */
+.min-h-screen {
+  min-height: 100vh;
+}
+
+.flex-grow {
+  flex: 1;
+}
+
+/* Navbar zaten güzel olacak */
+nav {
+  background: linear-gradient(135deg, #1e40af, #3b82f6);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}

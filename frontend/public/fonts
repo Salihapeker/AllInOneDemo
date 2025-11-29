@@ -1,0 +1,8 @@
+@font-face {
+  font-family: "Stoewer Ueberschrift";
+  src: local("Stoewer Ueberschrift"),
+    url("../assets/fonts/StoewerUeberschrift.otf") format("opentype");
+  font-weight: 400 900;
+  font-style: normal;
+  font-display: swap;
+}
