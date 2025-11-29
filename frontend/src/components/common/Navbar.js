@@ -192,7 +192,7 @@ export default function Navbar() {
           </div>
 
           <Link
-            to="/register"
+            to="/provider/dashboard"
             className="btn-register"
             style={{
               background: "linear-gradient(135deg, #6DBF8C, #4A9D6F)",

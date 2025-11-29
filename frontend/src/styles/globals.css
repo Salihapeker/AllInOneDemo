@@ -131,8 +131,10 @@ body {
 .app-header * {
   /* avoid inherited bright background and blue box-shadows */
   background-image: none !important;
+  background-color: transparent !important;
   box-shadow: none !important;
   -webkit-box-shadow: none !important;
+  outline: none !important;
   -webkit-appearance: none !important;
 }
 
@@ -140,6 +142,7 @@ body {
 .app-header .nav-active,
 .app-header .btn-primary {
   background-image: none !important;
+  background-color: transparent !important;
 }
 
 /* make sure nav links and header buttons use theme colours (no blue) */
@@ -151,7 +154,9 @@ body {
 .app-header .btn,
 .app-header button {
   color: var(--text) !important;
+  background: transparent !important;
   box-shadow: none !important;
+  border-color: transparent !important;
 }
 
 /* Nav active / hovered state (soft green highlight, not blue) */
