@@ -4,6 +4,13 @@ import { ThemeContext } from "../../contexts/ThemeContext";
 import { I18nContext } from "../../contexts/I18nContext";
 import "../../styles/globals.css";
 
+/*
+  Navbar (updated)
+  - Sticky, minimal, no heavy blue strip
+  - Login/Register moved to the very top/right
+  - Language select & theme toggle included
+*/
+
 export default function Navbar() {
   const { theme, toggleTheme } = useContext(ThemeContext);
   const { locale, setLocale, t } = useContext(I18nContext);
@@ -12,14 +19,15 @@ export default function Navbar() {
   const loggedIn = !!(
     localStorage.getItem("token") || localStorage.getItem("access_token")
   );
+  const userRole = localStorage.getItem("role") || null;
   const userEmail = localStorage.getItem("userEmail") || null;
 
   const handleLogout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("access_token");
+    localStorage.removeItem("role");
     localStorage.removeItem("userEmail");
     navigate("/");
-    // reload to ensure protected routes update
     window.location.reload();
   };
 
@@ -27,7 +35,7 @@ export default function Navbar() {
     <header
       className="app-header"
       role="banner"
-      style={{ position: "sticky", top: 0, zIndex: 60 }}
+      style={{ position: "sticky", top: 0, zIndex: 80 }}
     >
       <div
         className="container"
@@ -38,38 +46,45 @@ export default function Navbar() {
           gap: 12,
         }}
       >
-        <Link
-          to="/"
-          style={{
-            display: "flex",
-            alignItems: "center",
-            gap: 12,
-            textDecoration: "none",
-          }}
-        >
-          <div
-            className="brand-tile"
-            aria-hidden
-            style={{ width: 52, height: 52 }}
+        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+          <Link
+            to="/"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: 12,
+              textDecoration: "none",
+            }}
           >
-            4
-          </div>
-          <div
-            style={{ display: "flex", flexDirection: "column", lineHeight: 1 }}
-          >
-            <span
-              className="display-stoewer"
-              style={{ fontSize: 16, color: "var(--brand-2)" }}
+            <div
+              className="brand-tile"
+              aria-hidden
+              style={{ width: 48, height: 48 }}
             >
-              ALL IN ONE
-            </span>
-            <small className="text-muted" style={{ fontSize: 12 }}>
-              {t("for_you")}
-            </small>
-          </div>
-        </Link>
+              4
+            </div>
+            <div
+              style={{
+                display: "flex",
+                flexDirection: "column",
+                lineHeight: 1,
+              }}
+            >
+              <span
+                className="display-stoewer"
+                style={{ fontSize: 16, color: "var(--brand-2)" }}
+              >
+                ALL IN ONE
+              </span>
+              <small className="text-muted" style={{ fontSize: 12 }}>
+                {t("for_you")}
+              </small>
+            </div>
+          </Link>
+        </div>
 
         <nav
+          className="desktop-only"
           aria-label="Main navigation"
           style={{ display: "flex", alignItems: "center", gap: 12 }}
         >
@@ -97,29 +112,24 @@ export default function Navbar() {
           >
             {t("contact")}
           </NavLink>
+        </nav>
 
-          <div
-            style={{
-              width: 1,
-              height: 26,
-              background: "rgba(47,61,70,0.06)",
-              margin: "0 8px",
-            }}
-          />
-
-          {/* language select */}
+        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
           <select
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
             aria-label="language"
-            style={{ padding: 6, borderRadius: 8, border: "1px solid #e6e9ee" }}
+            style={{
+              padding: 6,
+              borderRadius: 8,
+              border: "1px solid var(--border)",
+            }}
           >
             <option value="tr">TR</option>
             <option value="de">DE</option>
             <option value="en">EN</option>
           </select>
 
-          {/* theme toggle */}
           <button
             aria-label="Toggle theme"
             className="btn btn-ghost"
@@ -157,11 +167,11 @@ export default function Navbar() {
                 {t("profile")}
               </Link>
               <button className="btn btn-outline" onClick={handleLogout}>
-                {t("logout")}
+                Çıkış
               </button>
             </div>
           )}
-        </nav>
+        </div>
       </div>
     </header>
   );

@@ -1,80 +1,117 @@
-// src/pages/RegisterPage.js
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api";
 
-const RegisterPage = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+/*
+  RegisterPage
+  - Simple registration: name, email, password and role selection (user/provider)
+  - Calls api.post("/auth/register/") or adapt to your backend
+*/
+
+export default function RegisterPage() {
   const navigate = useNavigate();
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    password: "",
+    role: "user",
+  });
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const submit = (e) => {
+  const submit = async (e) => {
     e.preventDefault();
-    // mock register: store and redirect to login
-    navigate("/login");
+    setLoading(true);
+    setError("");
+    try {
+      const res = await api.post("/auth/register/", form);
+      const data = res?.data ?? res;
+      // If backend returns token, store and redirect
+      if (data?.access || data?.token) {
+        const token = data.access || data.token;
+        localStorage.setItem("token", token);
+        localStorage.setItem("access_token", token);
+        localStorage.setItem("role", form.role);
+        navigate("/", { replace: true });
+      } else {
+        navigate("/login");
+      }
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Kayıt yapılamadı.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "80vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        className="card"
-        style={{ maxWidth: 540, width: "100%", padding: 28 }}
-      >
-        <h2 className="display-font" style={{ fontSize: 28, marginBottom: 8 }}>
-          Kayıt Ol
-        </h2>
-        <p className="text-muted" style={{ marginBottom: 18 }}>
-          E-posta ile kayıt olun ya da hizmet veren olarak başvuru yapın.
-        </p>
+    <div className="container-centered">
+      <div className="card">
+        <h2>Kayıt Ol</h2>
+        <form className="form-grid" onSubmit={submit}>
+          <label className="form-row">
+            <span>Ad Soyad</span>
+            <input
+              className="form-input"
+              value={form.name}
+              onChange={(e) => setForm({ ...form, name: e.target.value })}
+              required
+            />
+          </label>
 
-        <form onSubmit={submit} style={{ display: "grid", gap: 12 }}>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-posta"
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #e6e9ee",
-            }}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Parola"
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #e6e9ee",
-            }}
-          />
-          <select style={{ padding: 12, borderRadius: 8 }}>
-            <option value="user">Müşteri</option>
-            <option value="provider">Hizmet Veren</option>
-          </select>
-          <div style={{ display: "flex", gap: 10 }}>
-            <button type="submit" className="btn btn-primary">
-              Kayıt Ol
-            </button>
+          <label className="form-row">
+            <span>E-posta</span>
+            <input
+              className="form-input"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              required
+            />
+          </label>
+
+          <label className="form-row">
+            <span>Parola</span>
+            <input
+              className="form-input"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+            />
+          </label>
+
+          <label className="form-row">
+            <span>Rol</span>
+            <select
+              className="form-input"
+              value={form.role}
+              onChange={(e) => setForm({ ...form, role: e.target.value })}
+            >
+              <option value="user">Kullanıcı</option>
+              <option value="provider">Hizmet Veren</option>
+            </select>
+          </label>
+
+          {error && <div style={{ color: "crimson" }}>{error}</div>}
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
             <button
-              type="button"
               className="btn btn-outline"
+              type="button"
               onClick={() => navigate("/login")}
             >
-              Zaten Hesabım Var
+              Giriş Yap
+            </button>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Kaydediliyor..." : "Kayıt Ol"}
             </button>
           </div>
         </form>
       </div>
     </div>
   );
-};
-
-export default RegisterPage;
+}

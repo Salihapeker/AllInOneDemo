@@ -1,76 +1,98 @@
-// src/pages/LoginPage.js
 import React, { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
+import api from "../services/api";
 
-const LoginPage = () => {
+/*
+  LoginPage
+  - Basic login form, calls API (post /auth/login/ or /auth/token/)
+  - On success stores token and role in localStorage and redirects to 'from' or '/'
+  - If your backend path differs, replace api call accordingly
+*/
+
+export default function LoginPage() {
+  const navigate = useNavigate();
+  const location = useLocation();
+  const from = location.state?.from || "/";
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  const submit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    // mock login: save token to localStorage and redirect home
-    localStorage.setItem("token", "demo-token");
-    localStorage.setItem("userEmail", email);
-    navigate("/");
+    setError("");
+    setLoading(true);
+    try {
+      // replace with your real endpoint; here using api.post('/auth/login/')
+      const res = await api.post("/auth/login/", { email, password });
+      const data = res?.data ?? res;
+      // expected: { access: "...", user: { role: "user" } }
+      const token = data.access || data.token || data.data?.token;
+      const role = data.user?.role || data.role || "user";
+      const emailRet = data.user?.email || email;
+      if (token) {
+        localStorage.setItem("token", token);
+        localStorage.setItem("access_token", token);
+        localStorage.setItem("role", role);
+        localStorage.setItem("userEmail", emailRet);
+        navigate(from, { replace: true });
+      } else {
+        setError("Giriş başarısız. Yanlış kimlik bilgileri.");
+      }
+    } catch (err) {
+      setError(err?.response?.data?.detail || "Sunucu hatası, tekrar deneyin.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
-    <div
-      style={{
-        minHeight: "80vh",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-      }}
-    >
-      <div
-        className="card"
-        style={{ maxWidth: 480, width: "100%", padding: 28 }}
-      >
-        <h2 className="display-font" style={{ fontSize: 28, marginBottom: 8 }}>
-          Giriş Yap
-        </h2>
-        <p className="text-muted" style={{ marginBottom: 18 }}>
-          Hesabınıza giriş yapın veya yeni bir hesap oluşturun.
-        </p>
+    <div className="container-centered">
+      <div className="card">
+        <h2>Giriş Yap</h2>
+        <form className="form-grid" onSubmit={handleSubmit}>
+          <label className="form-row">
+            <span>E-posta</span>
+            <input
+              className="form-input"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+          </label>
 
-        <form onSubmit={submit} style={{ display: "grid", gap: 12 }}>
-          <input
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            placeholder="E-posta"
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #e6e9ee",
-            }}
-          />
-          <input
-            type="password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            placeholder="Parola"
-            style={{
-              padding: 12,
-              borderRadius: 8,
-              border: "1px solid #e6e9ee",
-            }}
-          />
-          <button type="submit" className="btn btn-primary">
-            Giriş Yap
-          </button>
+          <label className="form-row">
+            <span>Parola</span>
+            <input
+              className="form-input"
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              required
+            />
+          </label>
+
+          {error && <div style={{ color: "crimson" }}>{error}</div>}
+
+          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <button
+              className="btn btn-outline"
+              type="button"
+              onClick={() => navigate("/register")}
+            >
+              Kayıt Ol
+            </button>
+            <button
+              className="btn btn-primary"
+              type="submit"
+              disabled={loading}
+            >
+              {loading ? "Giriş yapılıyor..." : "Giriş"}
+            </button>
+          </div>
         </form>
-
-        <div style={{ marginTop: 14, fontSize: 14 }}>
-          Henüz hesabınız yok mu?{" "}
-          <Link to="/register" className="btn-ghost">
-            Kayıt Ol
-          </Link>
-        </div>
       </div>
     </div>
   );
-};
-
-export default LoginPage;
+}
