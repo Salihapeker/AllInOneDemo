@@ -1,13 +1,14 @@
 // src/pages/HomePage.js
 import React, { useEffect, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 
 /*
   Updated HomePage:
+  - Modern hero section with gradient title
   - Expands categories inline (click/tap) to reveal their services/alt-kategoriler.
   - Clicking a child (leaf) navigates to /services/:id (existing ServicesDetailPage).
-  - Keeps mock data until backend is available (getCategories).
-  - Accessible keyboard handling (Enter/Space).
+  - Central timeline with alternating left/right categories
+  - Smooth animations and transitions
 */
 
 const CategoryNode = ({
@@ -15,10 +16,12 @@ const CategoryNode = ({
   isOpen,
   onToggle,
   onChildClick,
-  side = "left",
+  index,
 }) => {
+  const isLeft = index % 2 === 0;
+  
   return (
-    <div className="cat-node">
+    <div className={`cat-node ${isLeft ? 'left' : 'right'}`}>
       <div
         className={`cat-main ${isOpen ? "open" : ""}`}
         role="button"
@@ -42,13 +45,12 @@ const CategoryNode = ({
 
       {/* children shown inline when open */}
       {isOpen && cat.children?.length > 0 && (
-        <div className="children-row" aria-live="polite">
-          <div className="connector" />
+        <div className="children-row stagger-children" aria-live="polite">
           <div className="children-list">
             {cat.children.map((child) => (
               <button
                 key={child.id}
-                className="child-tile card"
+                className="child-tile"
                 onClick={() => onChildClick(child)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter" || e.key === " ") onChildClick(child);
@@ -102,6 +104,7 @@ const HomePage = () => {
         id: 3,
         name: "ONARIM & MONTAJ",
         icon: "🔩",
+        description: "Mobilya montaj, çilingir, klima",
         children: [
           { id: 31, name: "Mobilya Montaj", icon: "🛠️" },
           { id: 32, name: "Çilingir", icon: "🔐" },
@@ -110,8 +113,9 @@ const HomePage = () => {
       },
       {
         id: 4,
-        name: "SERVİSLER (MAINTENANCE)",
+        name: "SERVİSLER",
         icon: "🧰",
+        description: "Bakım, kontrol, acil müdahale",
         children: [
           { id: 41, name: "Genel Bakım", icon: "🛎️" },
           { id: 42, name: "Periyodik Kontrol", icon: "📋" },
@@ -136,102 +140,392 @@ const HomePage = () => {
   return (
     <>
       <style>{`
-        /* Local styles for the expanded interactive homepage tree */
-        .home-root { min-height: 100vh; padding: 40px 20px; background: linear-gradient(180deg, #f9f1f1 0%, #f4eeec 100%); color: #2F3D46; }
-        .header { display:flex; justify-content:space-between; align-items:center; max-width:1200px; margin:0 auto 32px; }
-        .brand { display:flex; gap:14px; align-items:center; }
-        .brand-tile { width:52px; height:52px; border-radius:10px; background: linear-gradient(135deg,#85A98D,#517970); color:white; display:flex; align-items:center; justify-content:center; font-weight:900; font-family: 'Playfair Display', serif; font-size:20px; }
-        .hero { text-align:center; margin-bottom:28px; }
-        .hero h1 { font-family: 'Playfair Display', serif; font-size:44px; margin-bottom:6px; }
-        .hero p { color: rgba(47,61,70,0.7); }
+        /* ===== Hero Section ===== */
+        .hero-section {
+          text-align: center;
+          padding: 80px 20px;
+          background: linear-gradient(180deg, #F9F1F1 0%, #F4EEEC 100%);
+        }
 
-        .timeline { max-width:1100px; margin: 0 auto; position:relative; padding: 20px 12px 80px; }
-        .timeline::before { content:""; position:absolute; left:50%; transform:translateX(-50%); width:6px; height:100%; background: linear-gradient(180deg,#6fe0c6,#2f9a8a); border-radius:6px; box-shadow: 0 6px 24px rgba(81,121,112,0.08); }
+        .hero-title {
+          font-family: 'Playfair Display', serif;
+          font-size: clamp(48px, 8vw, 72px);
+          background: linear-gradient(135deg, #364F53, #6DBF8C);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+          margin-bottom: 16px;
+          font-weight: 900;
+          letter-spacing: -1px;
+        }
 
-        .cat-node { width:100%; display:block; margin: 28px 0; position:relative; }
-        .cat-main { display:flex; align-items:center; gap:18px; justify-content:flex-start; width:calc(50% - 40px); background:transparent; cursor:pointer; transform-origin:left center; }
-        .cat-node:nth-child(odd) .cat-main { margin-left: calc(50% - 480px); }
-        .cat-node:nth-child(even) .cat-main { margin-left: calc(50% + 24px); justify-content:flex-end; text-align:right; }
-        .cat-tile { width:86px; height:86px; border-radius:14px; display:flex; align-items:center; justify-content:center; background: linear-gradient(135deg,#85A98D,#517970); color:white; box-shadow: 0 10px 30px rgba(47,61,70,0.15); }
-        .cat-label { background: rgba(47,61,70,0.95); color: #F9F1F1; padding: 12px 16px; border-radius:8px; font-weight:700; box-shadow: 0 6px 18px rgba(20,20,20,0.35); max-width:320px; }
-        .cat-desc { font-weight:500; font-size:13px; opacity:0.85; margin-top:6px; font-weight:500; }
+        .hero-subtitle {
+          font-size: clamp(18px, 3vw, 24px);
+          color: rgba(47, 61, 70, 0.8);
+          margin-bottom: 40px;
+          font-weight: 500;
+        }
 
-        .chev { margin-left:8px; color: rgba(47,61,70,0.65); font-size:14px; }
+        .hero-actions {
+          display: flex;
+          gap: 16px;
+          justify-content: center;
+          flex-wrap: wrap;
+        }
 
-        /* children */
-        .children-row { display:flex; align-items:center; gap:18px; margin-top:14px; }
-        .children-list { display:flex; gap:12px; flex-wrap:wrap; }
-        .child-tile { display:flex; flex-direction:column; align-items:center; justify-content:center; width:130px; height:96px; padding:10px; border-radius:12px; background: linear-gradient(135deg,#364F53,#2F3D46); color:white; cursor:pointer; border: none; outline:none; transition: transform 160ms ease, box-shadow 160ms ease; }
-        .child-tile .child-icon { font-size:26px; margin-bottom:8px; }
-        .child-tile:hover { transform: translateY(-6px); box-shadow: 0 12px 30px rgba(47,61,70,0.18); }
-        .connector { height:2px; width:40%; background: linear-gradient(90deg, rgba(133,169,141,0.95), rgba(81,121,112,0.3)); border-radius:2px; margin-right:8px; opacity:0.95; }
+        .btn-primary-large {
+          padding: 16px 48px;
+          font-size: 18px;
+          background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+          color: white;
+          border: none;
+          border-radius: 999px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 24px rgba(109, 191, 140, 0.3);
+        }
 
-        /* responsive */
+        .btn-primary-large:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 40px rgba(109, 191, 140, 0.4);
+        }
+
+        .btn-secondary-large {
+          padding: 16px 48px;
+          font-size: 18px;
+          background: transparent;
+          color: #364F53;
+          border: 2px solid #364F53;
+          border-radius: 999px;
+          font-weight: 700;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .btn-secondary-large:hover {
+          background: #364F53;
+          color: white;
+          transform: translateY(-2px);
+        }
+
+        /* ===== Timeline / Tree Section ===== */
+        .home-root {
+          min-height: 100vh;
+          padding: 0 0 60px;
+          background: linear-gradient(180deg, #F4EEEC 0%, #f7f3f2 100%);
+          color: #2F3D46;
+        }
+
+        .timeline {
+          max-width: 1100px;
+          margin: 0 auto;
+          position: relative;
+          padding: 40px 20px 80px;
+        }
+
+        /* Merkezi yeşil dikey çizgi (timeline) */
+        .timeline::before {
+          content: "";
+          position: absolute;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 4px;
+          height: 100%;
+          background: linear-gradient(180deg, #6DBF8C, #4A9D6F);
+          border-radius: 4px;
+          box-shadow: 0 0 20px rgba(109, 191, 140, 0.4);
+        }
+
+        .cat-node {
+          width: 100%;
+          display: block;
+          margin: 32px 0;
+          position: relative;
+        }
+
+        /* Kategori kartları */
+        .cat-main {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          width: calc(50% - 50px);
+          background: linear-gradient(135deg, #364F53, #2F3D46);
+          border-radius: 12px;
+          padding: 16px 24px;
+          cursor: pointer;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+          box-shadow: 0 8px 24px rgba(54, 79, 83, 0.15);
+        }
+
+        .cat-main:hover {
+          transform: translateY(-4px);
+          box-shadow: 0 12px 40px rgba(54, 79, 83, 0.25);
+        }
+
+        .cat-main.open {
+          box-shadow: 0 12px 40px rgba(109, 191, 140, 0.2);
+          border: 2px solid rgba(109, 191, 140, 0.3);
+        }
+
+        .cat-node.left .cat-main {
+          margin-left: auto;
+          margin-right: calc(50% + 30px);
+        }
+
+        .cat-node.right .cat-main {
+          margin-left: calc(50% + 30px);
+          margin-right: auto;
+        }
+
+        /* Icon tiles */
+        .cat-tile {
+          width: 64px;
+          height: 64px;
+          min-width: 64px;
+          border-radius: 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+          color: white;
+          box-shadow: 0 8px 24px rgba(109, 191, 140, 0.3);
+          transition: transform 0.3s ease;
+        }
+
+        .cat-main:hover .cat-tile {
+          transform: scale(1.05);
+        }
+
+        .cat-icon {
+          font-size: 28px;
+        }
+
+        .cat-label {
+          flex: 1;
+          color: #F9F1F1;
+        }
+
+        .cat-name {
+          font-weight: 700;
+          font-size: 16px;
+          margin-bottom: 4px;
+        }
+
+        .cat-desc {
+          font-weight: 500;
+          font-size: 13px;
+          opacity: 0.85;
+        }
+
+        .chev {
+          color: rgba(249, 241, 241, 0.7);
+          font-size: 12px;
+          transition: transform 0.3s ease;
+        }
+
+        .cat-main.open .chev {
+          transform: rotate(180deg);
+        }
+
+        /* Alt kategori kartları */
+        .children-row {
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          margin-top: 20px;
+          padding-left: 20px;
+        }
+
+        .cat-node.left .children-row {
+          justify-content: flex-end;
+          padding-right: calc(50% + 50px);
+          padding-left: 20px;
+        }
+
+        .cat-node.right .children-row {
+          justify-content: flex-start;
+          padding-left: calc(50% + 50px);
+          padding-right: 20px;
+        }
+
+        .children-list {
+          display: flex;
+          gap: 12px;
+          flex-wrap: wrap;
+        }
+
+        .child-tile {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          width: 110px;
+          height: 90px;
+          padding: 12px;
+          border-radius: 12px;
+          background: linear-gradient(135deg, #364F53, #2F3D46);
+          color: white;
+          cursor: pointer;
+          border: 2px solid transparent;
+          outline: none;
+          transition: all 0.3s ease;
+          box-shadow: 0 4px 16px rgba(54, 79, 83, 0.2);
+        }
+
+        .child-tile:hover {
+          border-color: #6DBF8C;
+          transform: scale(1.05);
+          box-shadow: 0 8px 32px rgba(109, 191, 140, 0.4);
+        }
+
+        .child-icon {
+          font-size: 28px;
+          margin-bottom: 8px;
+        }
+
+        .child-name {
+          font-size: 12px;
+          font-weight: 600;
+          text-align: center;
+        }
+
+        /* Stagger animation */
+        .stagger-children > * {
+          animation: fadeInUp 0.5s ease-out backwards;
+        }
+        .stagger-children > *:nth-child(1) { animation-delay: 0.1s; }
+        .stagger-children > *:nth-child(2) { animation-delay: 0.2s; }
+        .stagger-children > *:nth-child(3) { animation-delay: 0.3s; }
+        .stagger-children > *:nth-child(4) { animation-delay: 0.4s; }
+        .stagger-children > *:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        /* Loading spinner */
+        .loading-spinner {
+          display: inline-block;
+          width: 40px;
+          height: 40px;
+          border: 4px solid #F4EEEC;
+          border-top-color: #6DBF8C;
+          border-radius: 50%;
+          animation: spin 0.8s linear infinite;
+          margin: 40px auto;
+        }
+
+        @keyframes spin {
+          to { transform: rotate(360deg); }
+        }
+
+        /* CTA Section */
+        .cta-section {
+          text-align: center;
+          margin-top: 40px;
+          padding: 40px 20px;
+        }
+
+        /* Responsive */
         @media (max-width: 900px) {
-          .cat-main { width:100%; margin-left:0 !important; justify-content:flex-start !important; }
-          .cat-node:nth-child(even) .cat-main { text-align:left; justify-content:flex-start; }
-          .timeline::before { left:12px; transform:none; height:100%; }
+          .timeline::before {
+            left: 20px;
+            transform: none;
+          }
+
+          .cat-main {
+            width: calc(100% - 50px);
+            margin-left: 50px !important;
+            margin-right: 0 !important;
+          }
+
+          .cat-node.left .children-row,
+          .cat-node.right .children-row {
+            padding-left: 50px;
+            padding-right: 0;
+            justify-content: flex-start;
+          }
+
+          .hero-section {
+            padding: 60px 20px;
+          }
+
+          .hero-actions {
+            flex-direction: column;
+            align-items: center;
+          }
+
+          .btn-primary-large,
+          .btn-secondary-large {
+            width: 100%;
+            max-width: 300px;
+          }
         }
       `}</style>
 
       <div className="home-root">
-        <header className="header container">
-          <div className="brand">
-            <div className="brand-tile">4</div>
-            <div>
-              <div style={{ fontWeight: 800, color: "var(--brand-dark-2)" }}>
-                ALL IN ONE
-              </div>
-              <div style={{ fontSize: 12, color: "rgba(47,61,70,0.6)" }}>
-                all in one for you
-              </div>
-            </div>
+        {/* Hero Section */}
+        <section className="hero-section">
+          <h1 className="hero-title">ALL IN ONE</h1>
+          <p className="hero-subtitle">Tıklayın → Dallansın → Ustanızı Bulun</p>
+          
+          <div className="hero-actions">
+            <button 
+              className="btn-primary-large"
+              onClick={() => document.querySelector('.timeline').scrollIntoView({ behavior: 'smooth' })}
+            >
+              Hizmetleri Keşfet
+            </button>
+            <button 
+              className="btn-secondary-large"
+              onClick={() => navigate('/provider/dashboard')}
+            >
+              Usta Olarak Katıl
+            </button>
           </div>
-          <nav style={{ display: "flex", gap: 14, alignItems: "center" }}>
-            <Link to="/login" className="btn-ghost">
-              Login
-            </Link>
-            <Link to="/provider/register" className="btn-primary">
-              Register
-            </Link>
-          </nav>
-        </header>
+        </section>
 
+        {/* Timeline / Tree Section */}
         <main className="container">
-          <section className="hero">
-            <h1 className="heading-display">ALL IN ONE</h1>
-            <p>Tıklayın → Dallansın → Ustanızı Bulun</p>
-          </section>
-
           <section className="timeline" role="list">
             {loading ? (
-              <div className="loading-spinner">Yükleniyor...</div>
+              <div style={{ textAlign: 'center' }}>
+                <div className="loading-spinner" />
+                <p>Yükleniyor...</p>
+              </div>
             ) : (
               categories.map((cat, idx) => {
                 const isOpen = openIds.includes(cat.id);
                 return (
-                  <div key={cat.id} className="cat-node" role="listitem">
-                    <CategoryNode
-                      cat={cat}
-                      isOpen={isOpen}
-                      onToggle={toggleOpen}
-                      onChildClick={handleChildClick}
-                      side={idx % 2 === 0 ? "left" : "right"}
-                    />
-                  </div>
+                  <CategoryNode
+                    key={cat.id}
+                    cat={cat}
+                    isOpen={isOpen}
+                    onToggle={toggleOpen}
+                    onChildClick={handleChildClick}
+                    index={idx}
+                  />
                 );
               })
             )}
           </section>
 
-          <div style={{ textAlign: "center", marginTop: 26 }}>
-            <Link
-              to="/provider/register"
-              className="btn-primary"
-              style={{ padding: "12px 22px", borderRadius: 999 }}
+          {/* CTA Section */}
+          <div className="cta-section">
+            <button
+              className="btn-primary-large"
+              onClick={() => navigate('/provider/dashboard')}
             >
               USTA MISINIZ? HEMEN BAŞVURUN
-            </Link>
+            </button>
           </div>
         </main>
       </div>
