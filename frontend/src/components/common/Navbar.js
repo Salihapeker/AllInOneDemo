@@ -1,41 +1,34 @@
 import React, { useContext } from "react";
-import { Link, NavLink, useNavigate } from "react-router-dom";
+import { Link, NavLink } from "react-router-dom";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { I18nContext } from "../../contexts/I18nContext";
 import "../../styles/globals.css";
 
 /*
   Navbar (updated)
-  - Sticky, minimal, no heavy blue strip
-  - Login/Register moved to the very top/right
-  - Language select & theme toggle included
+  - Sticky, minimal, modern design
+  - Logo (ALL IN ONE) + Menu + Language selector + "Kayıt Ol" button
+  - No login/register/logout buttons
+  - Theme toggle removed (will be added later)
 */
 
 export default function Navbar() {
-  const { theme, toggleTheme } = useContext(ThemeContext);
+  const { theme } = useContext(ThemeContext);
   const { locale, setLocale, t } = useContext(I18nContext);
-  const navigate = useNavigate();
-
-  const loggedIn = !!(
-    localStorage.getItem("token") || localStorage.getItem("access_token")
-  );
-  const userRole = localStorage.getItem("role") || null;
-  const userEmail = localStorage.getItem("userEmail") || null;
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("access_token");
-    localStorage.removeItem("role");
-    localStorage.removeItem("userEmail");
-    navigate("/");
-    window.location.reload();
-  };
 
   return (
     <header
       className="app-header"
       role="banner"
-      style={{ position: "sticky", top: 0, zIndex: 80 }}
+      style={{
+        position: "sticky",
+        top: 0,
+        zIndex: 1000,
+        background: "rgba(255, 255, 255, 0.95)",
+        backdropFilter: "blur(10px)",
+        borderBottom: "1px solid rgba(54, 79, 83, 0.1)",
+        boxShadow: "0 4px 20px rgba(0, 0, 0, 0.05)",
+      }}
     >
       <div
         className="container"
@@ -44,8 +37,10 @@ export default function Navbar() {
           alignItems: "center",
           justifyContent: "space-between",
           gap: 12,
+          padding: "12px 1rem",
         }}
       >
+        {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
           <Link
             to="/"
@@ -59,7 +54,19 @@ export default function Navbar() {
             <div
               className="brand-tile"
               aria-hidden
-              style={{ width: 48, height: 48 }}
+              style={{
+                width: 48,
+                height: 48,
+                borderRadius: 10,
+                background: "linear-gradient(135deg, #6DBF8C, #4A9D6F)",
+                color: "white",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                fontWeight: 900,
+                fontSize: 18,
+                boxShadow: "0 8px 24px rgba(109, 191, 140, 0.3)",
+              }}
             >
               4
             </div>
@@ -72,57 +79,99 @@ export default function Navbar() {
             >
               <span
                 className="display-stoewer"
-                style={{ fontSize: 16, color: "var(--brand-2)" }}
+                style={{
+                  fontSize: 16,
+                  fontWeight: 800,
+                  color: "#364F53",
+                }}
               >
                 ALL IN ONE
               </span>
-              <small className="text-muted" style={{ fontSize: 12 }}>
+              <small
+                className="text-muted"
+                style={{ fontSize: 12, color: "rgba(47, 61, 70, 0.6)" }}
+              >
                 {t("for_you")}
               </small>
             </div>
           </Link>
         </div>
 
+        {/* Menu */}
         <nav
           className="desktop-only"
           aria-label="Main navigation"
-          style={{ display: "flex", alignItems: "center", gap: 12 }}
+          style={{ display: "flex", alignItems: "center", gap: 8 }}
         >
           <NavLink
             to="/"
             className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
           >
             {t("home")}
           </NavLink>
           <NavLink
             to="/services"
             className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
           >
             {t("services")}
           </NavLink>
           <NavLink
             to="/about"
             className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
           >
             {t("about")}
           </NavLink>
           <NavLink
             to="/contact"
             className={({ isActive }) => (isActive ? "nav-active" : "nav-link")}
+            style={{
+              padding: "10px 16px",
+              borderRadius: 8,
+              fontWeight: 600,
+              textDecoration: "none",
+              transition: "all 0.2s ease",
+            }}
           >
             {t("contact")}
           </NavLink>
         </nav>
 
-        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {/* Right side - Language selector + Theme indicator + Register button */}
+        <div className="header-actions" style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <select
             value={locale}
             onChange={(e) => setLocale(e.target.value)}
             aria-label="language"
+            className="lang-select"
             style={{
-              padding: 6,
+              padding: "8px 12px",
               borderRadius: 8,
-              border: "1px solid var(--border)",
+              border: "1px solid #E5E7EB",
+              background: "white",
+              fontWeight: 600,
+              cursor: "pointer",
+              fontSize: 14,
             }}
           >
             <option value="tr">TR</option>
@@ -130,47 +179,36 @@ export default function Navbar() {
             <option value="en">EN</option>
           </select>
 
-          <button
-            aria-label="Toggle theme"
-            className="btn btn-ghost"
-            onClick={toggleTheme}
-            title={theme === "dark" ? "Açık moda geç" : "Koyu moda geç"}
-            style={{ padding: "6px 10px" }}
+          <div
+            className="theme-indicator"
+            style={{
+              fontSize: 20,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}
           >
-            {theme === "dark" ? "🌙" : "☀️"}
-          </button>
+            {theme === "dark" ? "🌙" : "🌞"}
+          </div>
 
-          {!loggedIn ? (
-            <>
-              <Link
-                to="/login"
-                className="btn btn-ghost"
-                style={{ padding: "8px 12px" }}
-              >
-                {t("login")}
-              </Link>
-              <Link
-                to="/register"
-                className="btn btn-primary"
-                style={{ padding: "8px 14px" }}
-              >
-                {t("register")}
-              </Link>
-            </>
-          ) : (
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Link
-                to="/profile"
-                className="btn btn-ghost"
-                style={{ padding: "6px 10px" }}
-              >
-                {t("profile")}
-              </Link>
-              <button className="btn btn-outline" onClick={handleLogout}>
-                Çıkış
-              </button>
-            </div>
-          )}
+          <Link
+            to="/register"
+            className="btn-register"
+            style={{
+              background: "linear-gradient(135deg, #6DBF8C, #4A9D6F)",
+              color: "white",
+              padding: "10px 24px",
+              borderRadius: 999,
+              fontWeight: 700,
+              textDecoration: "none",
+              border: "none",
+              cursor: "pointer",
+              transition: "all 0.3s ease",
+              boxShadow: "0 4px 16px rgba(109, 191, 140, 0.3)",
+            }}
+          >
+            {t("register")}
+          </Link>
         </div>
       </div>
     </header>
