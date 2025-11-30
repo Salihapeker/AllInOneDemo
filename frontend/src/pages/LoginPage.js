@@ -1,7 +1,7 @@
 import React, { useState, useContext } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import { AuthContext } from "../../contexts/AuthContext";
-import "../../styles/AuthPages.css";
+import { AuthContext } from "../contexts/AuthContext"; // ✅ .. / oldu
+import "../styles/AuthPages.css"; // ✅ ../ oldu
 
 export default function LoginPage() {
   const navigate = useNavigate();
