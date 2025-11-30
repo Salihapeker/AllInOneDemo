@@ -1,97 +1,91 @@
-import React, { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
-import api from "../services/api";
-
-/*
-  LoginPage
-  - Basic login form, calls API (post /auth/login/ or /auth/token/)
-  - On success stores token and role in localStorage and redirects to 'from' or '/'
-  - If your backend path differs, replace api call accordingly
-*/
+import React, { useState, useContext } from "react";
+import { useNavigate, Link } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext";
+import "../../styles/AuthPages.css";
 
 export default function LoginPage() {
   const navigate = useNavigate();
-  const location = useLocation();
-  const from = location.state?.from || "/";
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
+  const { login } = useContext(AuthContext);
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
+  });
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setLoading(true);
+
     try {
-      // replace with your real endpoint; here using api.post('/auth/login/')
-      const res = await api.post("/auth/login/", { email, password });
-      const data = res?.data ?? res;
-      // expected: { access: "...", user: { role: "user" } }
-      const token = data.access || data.token || data.data?.token;
-      const role = data.user?.role || data.role || "user";
-      const emailRet = data.user?.email || email;
-      if (token) {
-        localStorage.setItem("token", token);
-        localStorage.setItem("access_token", token);
-        localStorage.setItem("role", role);
-        localStorage.setItem("userEmail", emailRet);
-        navigate(from, { replace: true });
-      } else {
-        setError("Giriş başarısız. Yanlış kimlik bilgileri.");
-      }
+      await login(formData.email, formData.password);
+      navigate("/customer/dashboard");
     } catch (err) {
-      setError(err?.response?.data?.detail || "Sunucu hatası, tekrar deneyin.");
+      setError(err.response?.data?.message || "Giriş başarısız.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="container-centered">
-      <div className="card">
-        <h2>Giriş Yap</h2>
-        <form className="form-grid" onSubmit={handleSubmit}>
-          <label className="form-row">
-            <span>E-posta</span>
-            <input
-              className="form-input"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-          </label>
+    <div className="auth-page">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <h1>🔐 Giriş Yap</h1>
+            <p>Hesabınıza giriş yapın</p>
+          </div>
 
-          <label className="form-row">
-            <span>Parola</span>
-            <input
-              className="form-input"
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-            />
-          </label>
+          <form onSubmit={handleSubmit} className="auth-form">
+            {error && <div className="error-alert">{error}</div>}
 
-          {error && <div style={{ color: "crimson" }}>{error}</div>}
+            <div className="form-group">
+              <label className="form-label">E-posta</label>
+              <input
+                type="email"
+                className="form-input"
+                placeholder="ornek@email.com"
+                value={formData.email}
+                onChange={(e) =>
+                  setFormData({ ...formData, email: e.target.value })
+                }
+                required
+              />
+            </div>
 
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+            <div className="form-group">
+              <label className="form-label">Şifre</label>
+              <input
+                type="password"
+                className="form-input"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={(e) =>
+                  setFormData({ ...formData, password: e.target.value })
+                }
+                required
+              />
+            </div>
+
             <button
-              className="btn btn-outline"
-              type="button"
-              onClick={() => navigate("/register")}
-            >
-              Kayıt Ol
-            </button>
-            <button
-              className="btn btn-primary"
               type="submit"
+              className="btn-primary btn-block"
               disabled={loading}
             >
-              {loading ? "Giriş yapılıyor..." : "Giriş"}
+              {loading ? "Giriş yapılıyor..." : "Giriş Yap"}
             </button>
+          </form>
+
+          <div className="auth-footer">
+            <p>
+              Hesabınız yok mu?{" "}
+              <Link to="/register" className="auth-link">
+                Kayıt Ol
+              </Link>
+            </p>
           </div>
-        </form>
+        </div>
       </div>
     </div>
   );

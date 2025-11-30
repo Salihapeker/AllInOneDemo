@@ -1,37 +1,27 @@
-import React, { createContext, useEffect, useState } from "react";
+import React, { createContext, useState, useEffect } from "react";
 
-/*
- ThemeContext
- - Provides 'theme' ("light" | "dark") and toggleTheme()
- - Persists user preference to localStorage
- - Applies data-theme attribute on document.documentElement for CSS theming
-*/
-export const ThemeContext = createContext({
-  theme: "light",
-  toggleTheme: () => {},
-});
+export const ThemeContext = createContext();
 
-export const ThemeProvider = ({ children }) => {
+export function ThemeProvider({ children }) {
   const [theme, setTheme] = useState(() => {
-    try {
-      return localStorage.getItem("theme") || "light";
-    } catch {
-      return "light";
-    }
+    // localStorage'dan tema oku
+    return localStorage.getItem("theme") || "light";
   });
 
   useEffect(() => {
-    try {
-      localStorage.setItem("theme", theme);
-    } catch {}
+    // HTML'e data-theme attribute ekle
     document.documentElement.setAttribute("data-theme", theme);
+    // localStorage'a kaydet
+    localStorage.setItem("theme", theme);
   }, [theme]);
 
-  const toggleTheme = () => setTheme((t) => (t === "dark" ? "light" : "dark"));
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === "light" ? "dark" : "light"));
+  };
 
   return (
     <ThemeContext.Provider value={{ theme, toggleTheme }}>
       {children}
     </ThemeContext.Provider>
   );
-};
+}

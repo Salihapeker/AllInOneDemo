@@ -1,234 +1,301 @@
-import React, { useEffect, useState } from "react";
-import { getAvailableSlots, createAppointment } from "../../services/api";
-import { useNavigate } from "react-router-dom";
-import "../forms/FormStyles.css";
-import "../../styles/globals.css";
+import React, { useState, useEffect, useContext } from "react";
+import { AuthContext } from "../../contexts/AuthContext";
+import api from "../../services/api";
+import "./BookingModal.css";
 
-/*
-  BookingModal
-  - Props:
-    - providerId (required) : used to fetch availability
-    - serviceId (optional) : service id to include in appointment payload
-    - onClose() : called when modal closed
-    - onBooked(result) : called after successful booking
-  - Behavior:
-    - Fetches available slots for selected date
-    - Allows selecting a slot and submitting appointment
-    - Requires login: if no token, redirects to /login preserving return state
-*/
-
-export default function BookingModal({
-  providerId,
-  serviceId = null,
-  onClose,
-  onBooked,
-}) {
-  const navigate = useNavigate();
-  const [date, setDate] = useState(() => {
-    const d = new Date();
-    return d.toISOString().split("T")[0];
-  });
-  const [slots, setSlots] = useState([]);
-  const [loadingSlots, setLoadingSlots] = useState(false);
-  const [selectedSlot, setSelectedSlot] = useState(null);
-  const [note, setNote] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [error, setError] = useState("");
-
-  const token =
-    localStorage.getItem("token") || localStorage.getItem("access_token");
+export default function BookingModal({ service, provider, onClose }) {
+  const { user } = useContext(AuthContext);
+  const [selectedDate, setSelectedDate] = useState(null);
+  const [selectedTime, setSelectedTime] = useState(null);
+  const [availableDates, setAvailableDates] = useState([]);
+  const [availableTimes, setAvailableTimes] = useState([]);
+  const [bookedSlots, setBookedSlots] = useState([]);
+  const [notes, setNotes] = useState("");
+  const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchSlots(date);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [date]);
+    generateAvailableDates();
+  }, []);
 
-  const fetchSlots = async (d) => {
-    setLoadingSlots(true);
-    setError("");
+  useEffect(() => {
+    if (selectedDate) {
+      fetchAvailableTimes(selectedDate);
+    }
+  }, [selectedDate]);
+
+  // Önümüzdeki 14 günü oluştur (bugün hariç)
+  const generateAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+
+    for (let i = 1; i <= 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      // Pazar günlerini atla (isteğe bağlı)
+      if (date.getDay() !== 0) {
+        dates.push(date);
+      }
+    }
+
+    setAvailableDates(dates);
+  };
+
+  // Seçilen gün için müsait saatleri getir
+  const fetchAvailableTimes = async (date) => {
     try {
-      const res = await getAvailableSlots(providerId, d);
-      const data = res?.data ?? res;
-      // expect array of time strings e.g. ["09:00", "10:30"]
-      if (Array.isArray(data)) setSlots(data);
-      else setSlots(data.slots || []);
-    } catch (err) {
-      // fallback mocks when backend unavailable
-      setSlots(["09:00", "10:30", "13:00", "15:30"]);
-    } finally {
-      setLoadingSlots(false);
+      const dateStr = date.toISOString().split("T")[0];
+      const response = await api.get(
+        `/bookings/available-slots?serviceId=${service._id}&date=${dateStr}${
+          provider ? `&providerId=${provider._id}` : ""
+        }`
+      );
+
+      setBookedSlots(response.data.bookedSlots || []);
+      generateTimeSlots(response.data.bookedSlots || []);
+    } catch (error) {
+      console.error("Müsait saatler alınamadı:", error);
+      generateTimeSlots([]);
     }
   };
 
-  const handleBook = async () => {
-    setError("");
-    if (!selectedSlot) {
-      setError("Lütfen bir saat seçin.");
-      return;
-    }
-    // enforce login before booking
-    if (!token) {
-      // redirect to login and keep return path
-      navigate("/login", { state: { from: window.location.pathname } });
-      return;
-    }
-    setSubmitting(true);
-    try {
-      const payload = {
-        provider: providerId,
-        service: serviceId,
-        date,
-        time: selectedSlot,
-        note,
-      };
-      const res = await createAppointment(payload);
-      const data = res?.data ?? res;
-      if (data && (data.id || res.status === 201 || res.status === 200)) {
-        if (onBooked) onBooked(data);
-        alert(
-          "Randevu talebiniz gönderildi. Sağlayıcı onaylayınca bilgilendirileceksiniz."
-        );
-        if (onClose) onClose();
-      } else {
-        setError("Randevu oluşturulamadı. Lütfen tekrar deneyin.");
+  // 09:00 - 18:00 arası 30 dakikalık slotlar oluştur
+  const generateTimeSlots = (booked) => {
+    const slots = [];
+    const startHour = 9;
+    const endHour = 18;
+
+    for (let hour = startHour; hour < endHour; hour++) {
+      for (let minute of [0, 30]) {
+        const timeStr = `${hour.toString().padStart(2, "0")}:${minute
+          .toString()
+          .padStart(2, "0")}`;
+
+        const isBooked = booked.includes(timeStr);
+
+        slots.push({
+          time: timeStr,
+          available: !isBooked,
+        });
       }
-    } catch (err) {
-      setError(
-        err?.response?.data?.detail || "Sunucu hatası. Lütfen tekrar deneyin."
+    }
+
+    setAvailableTimes(slots);
+  };
+
+  const handleBooking = async () => {
+    if (!user) {
+      alert("Randevu almak için giriş yapmalısınız.");
+      onClose();
+      window.location.href = "/login";
+      return;
+    }
+
+    if (!selectedDate || !selectedTime) {
+      alert("Lütfen tarih ve saat seçiniz.");
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const bookingData = {
+        serviceId: service._id,
+        providerId: provider?._id,
+        date: selectedDate.toISOString().split("T")[0],
+        time: selectedTime,
+        notes: notes,
+      };
+
+      await api.post("/bookings", bookingData);
+
+      alert(
+        `✅ Randevunuz başarıyla oluşturuldu!\n\nHizmet: ${
+          service.name
+        }\nTarih: ${formatDate(selectedDate)}\nSaat: ${selectedTime}`
+      );
+
+      onClose();
+    } catch (error) {
+      console.error("Randevu oluşturulamadı:", error);
+      alert(
+        error.response?.data?.message ||
+          "Randevu oluşturulurken bir hata oluştu."
       );
     } finally {
-      setSubmitting(false);
+      setLoading(false);
     }
+  };
+
+  const formatDate = (date) => {
+    const days = [
+      "Pazar",
+      "Pazartesi",
+      "Salı",
+      "Çarşamba",
+      "Perşembe",
+      "Cuma",
+      "Cumartesi",
+    ];
+    const months = [
+      "Ocak",
+      "Şubat",
+      "Mart",
+      "Nisan",
+      "Mayıs",
+      "Haziran",
+      "Temmuz",
+      "Ağustos",
+      "Eylül",
+      "Ekim",
+      "Kasım",
+      "Aralık",
+    ];
+
+    return `${date.getDate()} ${
+      months[date.getMonth()]
+    } ${date.getFullYear()}, ${days[date.getDay()]}`;
+  };
+
+  const isDateSelected = (date) => {
+    return selectedDate && date.toDateString() === selectedDate.toDateString();
   };
 
   return (
-    <div style={modalOverlayStyle} role="dialog" aria-modal="true">
-      <div style={modalStyle}>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h3 className="display-stoewer" style={{ margin: 0 }}>
-            Randevu Takvimi
-          </h3>
-          <div style={{ display: "flex", gap: 8 }}>
-            <button
-              className="btn btn-ghost"
-              onClick={() => {
-                if (onClose) onClose();
-              }}
-            >
-              Kapat
-            </button>
+    <div className="modal-overlay" onClick={onClose}>
+      <div
+        className="modal-content booking-modal"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="modal-header">
+          <div>
+            <h3>📅 Randevu Al</h3>
+            <p className="modal-subtitle">{service.name}</p>
+            {provider && <p className="modal-provider">👤 {provider.name}</p>}
           </div>
+          <button className="modal-close" onClick={onClose}>
+            ✕
+          </button>
         </div>
 
-        <div style={{ marginTop: 12, display: "grid", gap: 10 }}>
-          <label className="form-row">
-            <span className="form-label">Tarih seçin</span>
-            <input
-              className="form-input"
-              type="date"
-              value={date}
-              onChange={(e) => setDate(e.target.value)}
-            />
-          </label>
-
-          <div>
-            <div style={{ marginBottom: 8, fontWeight: 700 }}>
-              Uygun Saatler
+        {/* Body */}
+        <div className="modal-body">
+          {/* Tarih Seçimi */}
+          <div className="booking-section">
+            <h4>📆 Tarih Seçin</h4>
+            <div className="date-grid">
+              {availableDates.map((date, index) => (
+                <button
+                  key={index}
+                  className={`date-card ${
+                    isDateSelected(date) ? "selected" : ""
+                  }`}
+                  onClick={() => setSelectedDate(date)}
+                >
+                  <div className="date-day">
+                    {date.toLocaleDateString("tr-TR", { weekday: "short" })}
+                  </div>
+                  <div className="date-number">{date.getDate()}</div>
+                  <div className="date-month">
+                    {date.toLocaleDateString("tr-TR", { month: "short" })}
+                  </div>
+                </button>
+              ))}
             </div>
-            {loadingSlots ? (
-              <div className="loading-spinner">Yükleniyor...</div>
-            ) : slots.length === 0 ? (
-              <div className="card">Seçilen tarihte uygun saat yok.</div>
-            ) : (
-              <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                {slots.map((s) => (
+          </div>
+
+          {/* Saat Seçimi */}
+          {selectedDate && (
+            <div className="booking-section">
+              <h4>⏰ Saat Seçin</h4>
+              <p className="section-hint">
+                Müsait saatler yeşil, dolu saatler kırmızı ile gösterilmiştir.
+              </p>
+              <div className="time-slots">
+                {availableTimes.map((slot, index) => (
                   <button
-                    key={s}
-                    type="button"
-                    className={`child-tile ${
-                      selectedSlot === s ? "selected-slot" : ""
+                    key={index}
+                    className={`time-slot ${!slot.available ? "booked" : ""} ${
+                      selectedTime === slot.time ? "selected" : ""
                     }`}
-                    onClick={() => setSelectedSlot(s)}
-                    style={
-                      selectedSlot === s
-                        ? {
-                            boxShadow: "0 12px 28px rgba(81,121,112,0.18)",
-                            transform: "translateY(-4px)",
-                          }
-                        : {}
-                    }
+                    onClick={() => slot.available && setSelectedTime(slot.time)}
+                    disabled={!slot.available}
                   >
-                    {s}
+                    {slot.time}
+                    {!slot.available && (
+                      <span className="badge-booked">DOLU</span>
+                    )}
                   </button>
                 ))}
               </div>
-            )}
-          </div>
-
-          <label className="form-row">
-            <span className="form-label">
-              Kısa not / ön görüşme notu (opsiyonel)
-            </span>
-            <textarea
-              className="form-input"
-              rows={3}
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-              placeholder="Talebinizle ilgili kısa bilgi..."
-            />
-          </label>
-
-          {error && (
-            <div className="form-error" role="alert">
-              {error}
             </div>
           )}
 
-          <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-            <button
-              className="btn btn-outline"
-              onClick={() => {
-                if (onClose) onClose();
-              }}
-            >
-              İptal
-            </button>
-            <button
-              className="btn btn-primary"
-              onClick={handleBook}
-              disabled={submitting}
-            >
-              {submitting ? "Gönderiliyor..." : "Randevu Talep Et"}
-            </button>
-          </div>
+          {/* Notlar */}
+          {selectedTime && (
+            <div className="booking-section">
+              <h4>📝 Notlar (Opsiyonel)</h4>
+              <textarea
+                className="form-textarea"
+                placeholder="Özel talepleriniz veya notlarınız varsa buraya yazabilirsiniz..."
+                rows="4"
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+              />
+            </div>
+          )}
+
+          {/* Özet */}
+          {selectedDate && selectedTime && (
+            <div className="booking-summary">
+              <h4>📋 Randevu Özeti</h4>
+              <div className="summary-item">
+                <span className="summary-label">Hizmet:</span>
+                <span className="summary-value">{service.name}</span>
+              </div>
+              {provider && (
+                <div className="summary-item">
+                  <span className="summary-label">Hizmet Veren:</span>
+                  <span className="summary-value">{provider.name}</span>
+                </div>
+              )}
+              <div className="summary-item">
+                <span className="summary-label">Tarih:</span>
+                <span className="summary-value">
+                  {formatDate(selectedDate)}
+                </span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Saat:</span>
+                <span className="summary-value">{selectedTime}</span>
+              </div>
+              <div className="summary-item">
+                <span className="summary-label">Süre:</span>
+                <span className="summary-value">{service.duration} dakika</span>
+              </div>
+              <div className="summary-item summary-total">
+                <span className="summary-label">Toplam:</span>
+                <span className="summary-value">{service.price}€</span>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="modal-footer">
+          <button className="btn-ghost" onClick={onClose}>
+            İptal
+          </button>
+          <button
+            className="btn-primary"
+            onClick={handleBooking}
+            disabled={!selectedDate || !selectedTime || loading}
+          >
+            {loading ? "Oluşturuluyor..." : "✅ Randevuyu Onayla"}
+          </button>
         </div>
       </div>
     </div>
   );
 }
-
-// small inline styles to avoid new css file (you can move to admin.css or globals.css)
-const modalOverlayStyle = {
-  position: "fixed",
-  inset: 0,
-  background: "rgba(8,10,12,0.45)",
-  display: "flex",
-  alignItems: "center",
-  justifyContent: "center",
-  zIndex: 9999,
-  padding: 16,
-};
-
-const modalStyle = {
-  width: "min(880px, 96%)",
-  background: "white",
-  borderRadius: 12,
-  padding: 18,
-  boxShadow: "0 20px 60px rgba(16,24,32,0.4)",
-};

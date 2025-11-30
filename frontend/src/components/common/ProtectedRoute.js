@@ -1,39 +1,25 @@
-// ProtectedRoute.js
-import React from "react";
+import React, { useContext } from "react";
 import { Navigate } from "react-router-dom";
+import { AuthContext } from "../../contexts/AuthContext";
 
-/*
-  ProtectedRoute
-  - Uses localStorage 'role' which is set on login/register in the app
-  - If you prefer to fetch the current user from the server, replace getUserRole()
-    with an async call to getCurrentUser() from services/api and show a loader.
-*/
+export default function ProtectedRoute({ children, role }) {
+  const { user, loading } = useContext(AuthContext);
 
-const getUserRole = () => {
-  // Read the role the login/register stores (string like "user" | "provider" | "admin")
-  const roleFromLS = localStorage.getItem("role");
-  if (roleFromLS) return roleFromLS;
-  // Backward compatibility: if you store a full 'user' object
-  try {
-    const user = JSON.parse(localStorage.getItem("user") || "null");
-    return user?.role || null;
-  } catch {
-    return null;
-  }
-};
-
-const ProtectedRoute = ({ allowedRoles = [], children }) => {
-  const role = getUserRole();
-
-  if (!role) {
-    return <Navigate to="/login" replace />;
+  if (loading) {
+    return (
+      <div className="loading-container">
+        <div className="loading-spinner"></div>
+      </div>
+    );
   }
 
-  if (allowedRoles.length > 0 && !allowedRoles.includes(role)) {
-    return <Navigate to="/" replace />;
+  if (!user) {
+    return <Navigate to="/login" />;
+  }
+
+  if (role && user.role !== role) {
+    return <Navigate to="/" />;
   }
 
   return children;
-};
-
-export default ProtectedRoute;
+}
