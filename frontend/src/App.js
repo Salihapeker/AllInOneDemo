@@ -4,19 +4,15 @@ import { Routes, Route } from "react-router-dom";
 
 // Doğru import'lar (pages klasöründen)
 import HomePage from "./pages/HomePage";
-import LoginPage from "./pages/LoginPage";
-import RegisterPage from "./pages/RegisterPage";
 import ProfilePage from "./pages/ProfilePage";
 import ServicesDetailPage from "./pages/ServicesDetailPage";
 // Rol bazlı dashboard'lar
 import UserDashboard from "./pages/user/UserDashboard";
 import AdminDashboard from "./pages/admin/AdminDashboard";
-
 import ProviderDashboard from "./pages/Provider/ProviderDashboard";
 // Ortak bileşenler
 import Navbar from "./components/common/Navbar";
 import Footer from "./components/common/Footer";
-import ProtectedRoute from "./components/common/ProtectedRoute";
 
 function App() {
   return (
@@ -26,39 +22,17 @@ function App() {
         <Routes>
           {/* Genel Sayfalar */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
           <Route path="/profile" element={<ProfilePage />} />
 
-          {/* User (Müşteri) */}
-          <Route
-            path="/user/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["user"]}>
-                <UserDashboard />
-              </ProtectedRoute>
-            }
-          />
+          {/* User (Müşteri) - Herkesin erişimine açık */}
+          <Route path="/user/dashboard" element={<UserDashboard />} />
 
-          {/* Admin */}
-          <Route
-            path="/admin/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["admin"]}>
-                <AdminDashboard />
-              </ProtectedRoute>
-            }
-          />
+          {/* Admin - Herkesin erişimine açık */}
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
 
-          {/* Provider (Usta) */}
-          <Route
-            path="/provider/dashboard"
-            element={
-              <ProtectedRoute allowedRoles={["provider"]}>
-                <ProviderDashboard />
-              </ProtectedRoute>
-            }
-          />
+          {/* Provider (Usta) - Herkesin erişimine açık */}
+          <Route path="/provider/dashboard" element={<ProviderDashboard />} />
+
           <Route path="/services/:id" element={<ServicesDetailPage />} />
 
           {/* 404 - Sayfa Bulunamadı */}

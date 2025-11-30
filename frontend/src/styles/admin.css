@@ -58,6 +58,12 @@
   font-weight: 700;
   border: none;
   cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-danger:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(239, 68, 68, 0.3);
 }
 
 /* Category tree */
@@ -72,7 +78,13 @@
   background: rgba(255, 255, 255, 0.02);
   display: flex;
   flex-direction: column;
+  transition: all 0.3s ease;
 }
+
+.cat-tree-node:hover {
+  background: rgba(109, 191, 140, 0.05);
+}
+
 .node-row {
   display: flex;
   justify-content: space-between;
@@ -100,7 +112,14 @@
 .admin-stat {
   padding: 16px;
   text-align: left;
+  transition: all 0.3s ease;
 }
+
+.admin-stat:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 40px rgba(54, 79, 83, 0.15);
+}
+
 .stat-title {
   font-weight: 700;
   color: var(--brand-2);
@@ -109,7 +128,7 @@
   font-size: 28px;
   font-weight: 900;
   margin-top: 8px;
-  color: var(--accent-2);
+  color: #6dbf8c;
 }
 .stat-muted {
   font-size: 13px;
@@ -132,6 +151,91 @@
   padding: 8px 10px;
   border-radius: 8px;
   border: 1px solid #e6e9ee;
+  transition: all 0.2s ease;
+}
+
+.form-input:focus {
+  border-color: #6dbf8c;
+  box-shadow: 0 0 0 4px rgba(109, 191, 140, 0.1);
+}
+
+/* Pulse animation for icons */
+@keyframes pulse {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+.pulse-icon {
+  animation: pulse 2s ease-in-out infinite;
+}
+
+/* Fade in up animation */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.fade-in-up {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Slide in from left */
+@keyframes slideInLeft {
+  from {
+    opacity: 0;
+    transform: translateX(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-left {
+  animation: slideInLeft 0.4s ease-out;
+}
+
+/* Slide in from right */
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.slide-in-right {
+  animation: slideInRight 0.4s ease-out;
+}
+
+/* Scale up animation */
+@keyframes scaleUp {
+  from {
+    opacity: 0;
+    transform: scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.scale-up {
+  animation: scaleUp 0.3s ease-out;
 }
 
 /* responsive tweaks */
