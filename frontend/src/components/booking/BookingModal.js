@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../../contexts/AuthContext";
 import api from "../../services/api";
 import "./BookingModal.css";
@@ -9,58 +9,11 @@ export default function BookingModal({ service, provider, onClose }) {
   const [selectedTime, setSelectedTime] = useState(null);
   const [availableDates, setAvailableDates] = useState([]);
   const [availableTimes, setAvailableTimes] = useState([]);
-  const [bookedSlots, setBookedSlots] = useState([]);
   const [notes, setNotes] = useState("");
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    generateAvailableDates();
-  }, []);
-
-  useEffect(() => {
-    if (selectedDate) {
-      fetchAvailableTimes(selectedDate);
-    }
-  }, [selectedDate]);
-
-  // Önümüzdeki 14 günü oluştur (bugün hariç)
-  const generateAvailableDates = () => {
-    const dates = [];
-    const today = new Date();
-
-    for (let i = 1; i <= 14; i++) {
-      const date = new Date(today);
-      date.setDate(today.getDate() + i);
-
-      // Pazar günlerini atla (isteğe bağlı)
-      if (date.getDay() !== 0) {
-        dates.push(date);
-      }
-    }
-
-    setAvailableDates(dates);
-  };
-
-  // Seçilen gün için müsait saatleri getir
-  const fetchAvailableTimes = async (date) => {
-    try {
-      const dateStr = date.toISOString().split("T")[0];
-      const response = await api.get(
-        `/bookings/available-slots?serviceId=${service._id}&date=${dateStr}${
-          provider ? `&providerId=${provider._id}` : ""
-        }`
-      );
-
-      setBookedSlots(response.data.bookedSlots || []);
-      generateTimeSlots(response.data.bookedSlots || []);
-    } catch (error) {
-      console.error("Müsait saatler alınamadı:", error);
-      generateTimeSlots([]);
-    }
-  };
-
   // 09:00 - 18:00 arası 30 dakikalık slotlar oluştur
-  const generateTimeSlots = (booked) => {
+  const generateTimeSlots = useCallback((booked) => {
     const slots = [];
     const startHour = 9;
     const endHour = 18;
@@ -81,7 +34,54 @@ export default function BookingModal({ service, provider, onClose }) {
     }
 
     setAvailableTimes(slots);
+  }, []);
+
+  // Seçilen gün için müsait saatleri getir
+  const fetchAvailableTimes = useCallback(async (date) => {
+    try {
+      const dateStr = date.toISOString().split("T")[0];
+      const response = await api.get(
+        `/bookings/available-slots?serviceId=${service._id}&date=${dateStr}${
+          provider ? `&providerId=${provider._id}` : ""
+        }`
+      );
+
+      generateTimeSlots(response.data.bookedSlots || []);
+    } catch (error) {
+      console.error("Müsait saatler alınamadı:", error);
+      generateTimeSlots([]);
+    }
+  }, [service._id, provider, generateTimeSlots]);
+
+  useEffect(() => {
+    generateAvailableDates();
+  }, []);
+
+  useEffect(() => {
+    if (selectedDate) {
+      fetchAvailableTimes(selectedDate);
+    }
+  }, [selectedDate, fetchAvailableTimes]);
+
+  // Önümüzdeki 14 günü oluştur (bugün hariç)
+  const generateAvailableDates = () => {
+    const dates = [];
+    const today = new Date();
+
+    for (let i = 1; i <= 14; i++) {
+      const date = new Date(today);
+      date.setDate(today.getDate() + i);
+
+      // Pazar günlerini atla (isteğe bağlı)
+      if (date.getDay() !== 0) {
+        dates.push(date);
+      }
+    }
+
+    setAvailableDates(dates);
   };
+
+
 
   const handleBooking = async () => {
     if (!user) {

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import api from "../services/api";
 import BookingModal from "../components/booking/BookingModal";
@@ -16,11 +16,7 @@ export default function ServiceDetailPage() {
   const [activeTab, setActiveTab] = useState("details"); // details, gallery, faq
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchServiceDetails();
-  }, [id]);
-
-  const fetchServiceDetails = async () => {
+  const fetchServiceDetails = useCallback(async () => {
     try {
       const response = await api.get(`/services/${id}`);
       setService(response.data);
@@ -127,7 +123,11 @@ export default function ServiceDetailPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    fetchServiceDetails();
+  }, [fetchServiceDetails]);
 
   const openBookingModal = () => {
     setShowBookingModal(true);
