@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../styles/LegalPages.css";
 
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
+
 const categories = [
   { id: 1, name: "Tesisatçı", icon: "🔧" },
   { id: 2, name: "Elektrikçi", icon: "💡" },
@@ -55,7 +57,7 @@ export default function WorkerApplicationPage() {
   };
 
   const handleFileChange = (field, file) => {
-    if (file && file.size > 5 * 1024 * 1024) {
+    if (file && file.size > MAX_FILE_SIZE_BYTES) {
       setErrors((prev) => ({ ...prev, [field]: "Dosya boyutu 5MB'dan küçük olmalıdır." }));
       return;
     }
