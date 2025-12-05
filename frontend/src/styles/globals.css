@@ -8,8 +8,12 @@
 
 /* ============================================
    CSS VARIABLES - LIGHT MODE (Default)
+   Color Palette as specified:
+   - Light: #F9F1F1 (background), #ffffff (cards), #85A98D, #517970 (accent)
+   - Text: #374259 (light mode)
    ============================================ */
-:root {
+:root,
+[data-theme="light"] {
   /* Colors */
   --primary-1: #364f53;
   --primary-2: #2f3d46;
@@ -18,17 +22,18 @@
 
   /* Backgrounds */
   --bg-main: #f9f1f1;
+  --bg-primary: #f9f1f1;
   --bg-secondary: #f4eeec;
   --bg-card: #ffffff;
   --bg-hover: #f7f3f2;
 
   /* Text */
-  --text-primary: #2f3d46;
+  --text-primary: #374259;
   --text-secondary: #364f53;
-  --text-muted: rgba(47, 61, 70, 0.6);
+  --text-muted: rgba(55, 66, 89, 0.6);
 
   /* Borders & Shadows */
-  --border: rgba(54, 79, 83, 0.1);
+  --border: #e0e0e0;
   --border-light: rgba(54, 79, 83, 0.05);
   --shadow-sm: 0 2px 8px rgba(54, 79, 83, 0.08);
   --shadow-md: 0 4px 16px rgba(54, 79, 83, 0.12);
@@ -52,23 +57,27 @@
 
 /* ============================================
    DARK MODE
+   Color Palette as specified:
+   - Dark: #1a1f25 (background), #364F53 (cards), #85A98D, #5c8984 (accent)
+   - Text: #F9F1F1 (dark mode)
    ============================================ */
-html[data-theme="dark"] {
-  --primary-1: #374259;
+[data-theme="dark"] {
+  --primary-1: #364f53;
   --primary-2: #545b77;
-  --accent-1: #5c8984;
-  --accent-2: #f2c8c8;
+  --accent-1: #85a98d;
+  --accent-2: #5c8984;
 
-  --bg-main: #1a1f26;
+  --bg-main: #1a1f25;
+  --bg-primary: #1a1f25;
   --bg-secondary: #22272e;
-  --bg-card: #2c3340;
-  --bg-hover: #374259;
+  --bg-card: #364f53;
+  --bg-hover: #3d5a5f;
 
-  --text-primary: #e7e9ea;
-  --text-secondary: #a8b2c0;
-  --text-muted: rgba(231, 233, 234, 0.6);
+  --text-primary: #f9f1f1;
+  --text-secondary: #d0c8c8;
+  --text-muted: rgba(249, 241, 241, 0.6);
 
-  --border: rgba(92, 137, 132, 0.2);
+  --border: #4a5568;
   --border-light: rgba(92, 137, 132, 0.1);
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3);
   --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4);
@@ -79,8 +88,8 @@ html[data-theme="dark"] {
   --error: #f87171;
   --info: #60a5fa;
 
-  --gradient-primary: linear-gradient(135deg, #5c8984, #f2c8c8);
-  --gradient-card: linear-gradient(135deg, #374259, #545b77);
+  --gradient-primary: linear-gradient(135deg, #85a98d, #5c8984);
+  --gradient-card: linear-gradient(135deg, #364f53, #2f3d46);
 }
 
 /* ============================================

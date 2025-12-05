@@ -1,32 +1,20 @@
 /* ============================================
    PROVIDER PANEL STYLES
    All In One 4 You - Provider Panel CSS
+   Uses CSS variables for theme support
    ============================================ */
-
-/* ===== Color Variables ===== */
-:root {
-  --provider-dark-green: #364F53;
-  --provider-dark-blue: #2F3D46;
-  --provider-light-green: #85A98D;
-  --provider-mid-green: #517970;
-  --provider-bg-light: #F9F1F1;
-  --provider-bg-card: #f2d8d8;
-  --provider-icon-green: #5c8984;
-  --provider-info-blue: #545b77;
-  --provider-text-dark: #374259;
-}
 
 /* ===== Provider Layout ===== */
 .provider-layout {
   display: flex;
   min-height: 100vh;
-  background: var(--provider-bg-light);
+  background: var(--bg-main);
 }
 
 /* ===== Sidebar ===== */
 .provider-sidebar {
   width: 260px;
-  background: linear-gradient(180deg, var(--provider-mid-green), var(--provider-dark-green));
+  background: var(--gradient-primary);
   color: white;
   position: fixed;
   top: 0;
@@ -35,6 +23,10 @@
   overflow-y: auto;
   z-index: 1000;
   transition: transform 0.3s ease;
+}
+
+[data-theme="dark"] .provider-sidebar {
+  background: linear-gradient(180deg, #517970, #2f3d46);
 }
 
 .provider-sidebar-header {
@@ -52,7 +44,7 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--provider-light-green), #6DBF8C);
+  background: linear-gradient(135deg, var(--accent-1), #6DBF8C);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -119,7 +111,7 @@
 .provider-nav-link.active {
   background: rgba(249, 241, 241, 0.1);
   color: white;
-  border-left-color: var(--provider-bg-light);
+  border-left-color: var(--bg-main);
 }
 
 .provider-nav-icon {
@@ -149,12 +141,12 @@
 
 /* ===== Header ===== */
 .provider-header {
-  background: white;
+  background: var(--bg-card);
   padding: 16px 24px;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  border-bottom: 1px solid rgba(54, 79, 83, 0.1);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 100;
@@ -172,13 +164,13 @@
   border: none;
   font-size: 24px;
   cursor: pointer;
-  color: var(--provider-dark-green);
+  color: var(--primary-1);
 }
 
 .provider-page-title {
   font-size: 20px;
   font-weight: 800;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -228,10 +220,10 @@
 }
 
 .provider-stat-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 16px rgba(54, 79, 83, 0.08);
+  box-shadow: var(--shadow-sm);
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
@@ -240,7 +232,7 @@
 
 .provider-stat-card:hover {
   transform: translateY(-4px);
-  box-shadow: 0 8px 32px rgba(54, 79, 83, 0.15);
+  box-shadow: var(--shadow-lg);
 }
 
 .provider-stat-icon {
@@ -254,7 +246,7 @@
 }
 
 .provider-stat-icon.today {
-  background: linear-gradient(135deg, var(--provider-light-green), var(--provider-mid-green));
+  background: var(--gradient-primary);
 }
 
 .provider-stat-icon.pending {
@@ -276,26 +268,26 @@
 .provider-stat-value {
   font-size: 28px;
   font-weight: 900;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
 }
 
 .provider-stat-label {
   font-size: 13px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
   margin-top: 2px;
 }
 
 /* ===== Appointments List ===== */
 .provider-appointments-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
-  box-shadow: 0 4px 16px rgba(54, 79, 83, 0.08);
+  box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
 
 .provider-appointments-header {
   padding: 20px;
-  border-bottom: 1px solid rgba(54, 79, 83, 0.1);
+  border-bottom: 1px solid var(--border);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -304,7 +296,7 @@
 .provider-appointments-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin: 0;
 }
 
@@ -317,20 +309,20 @@
   padding: 8px 16px;
   border-radius: 999px;
   border: none;
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
   font-weight: 600;
   font-size: 13px;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .provider-filter-tab:hover {
-  background: var(--provider-bg-card);
+  background: var(--bg-secondary);
 }
 
 .provider-filter-tab.active {
-  background: var(--provider-dark-green);
+  background: var(--primary-1);
   color: white;
 }
 
@@ -344,13 +336,13 @@
   gap: 16px;
   padding: 16px;
   border-radius: 12px;
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
   margin-bottom: 8px;
   transition: all 0.3s ease;
 }
 
 .provider-appointment-item:hover {
-  background: var(--provider-bg-card);
+  background: var(--bg-secondary);
 }
 
 .provider-appointment-item:last-child {
@@ -365,18 +357,18 @@
 .provider-appointment-day {
   font-size: 24px;
   font-weight: 900;
-  color: var(--provider-dark-green);
+  color: var(--primary-1);
 }
 
 .provider-appointment-month {
   font-size: 12px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
 .provider-appointment-time {
   font-size: 12px;
-  color: var(--provider-mid-green);
+  color: var(--accent-2);
   font-weight: 600;
   margin-top: 4px;
 }
@@ -387,7 +379,7 @@
 
 .provider-appointment-service {
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
@@ -396,7 +388,7 @@
   align-items: center;
   gap: 8px;
   font-size: 13px;
-  color: rgba(55, 66, 89, 0.7);
+  color: var(--text-secondary);
 }
 
 .provider-appointment-status {
@@ -457,7 +449,7 @@
 
 .provider-action-btn.view {
   background: rgba(84, 91, 119, 0.1);
-  color: var(--provider-info-blue);
+  color: var(--info);
 }
 
 .provider-action-btn.view:hover {
@@ -466,10 +458,10 @@
 
 /* ===== Calendar ===== */
 .provider-calendar-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 20px;
-  box-shadow: 0 4px 16px rgba(54, 79, 83, 0.08);
+  box-shadow: var(--shadow-sm);
 }
 
 .provider-calendar-header {
@@ -482,7 +474,7 @@
 .provider-calendar-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
 }
 
 .provider-calendar-nav {
@@ -492,17 +484,17 @@
 
 .provider-calendar-nav-btn {
   padding: 8px 12px;
-  border: 1px solid rgba(54, 79, 83, 0.2);
+  border: 1px solid var(--border);
   border-radius: 8px;
-  background: white;
+  background: var(--bg-card);
   font-size: 14px;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .provider-calendar-nav-btn:hover {
-  border-color: var(--provider-light-green);
-  background: rgba(133, 169, 141, 0.05);
+  border-color: var(--accent-1);
+  background: var(--bg-hover);
 }
 
 .provider-calendar-view-tabs {
@@ -515,16 +507,16 @@
   padding: 8px 20px;
   border-radius: 8px;
   border: none;
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
   font-weight: 600;
   font-size: 13px;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
 .provider-calendar-view-tab.active {
-  background: var(--provider-dark-green);
+  background: var(--primary-1);
   color: white;
 }
 
@@ -539,7 +531,7 @@
   padding: 12px;
   font-size: 12px;
   font-weight: 700;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
@@ -553,17 +545,17 @@
 }
 
 .provider-calendar-day:hover {
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
 }
 
 .provider-calendar-day.today {
-  background: var(--provider-light-green);
+  background: var(--accent-1);
   color: white;
   font-weight: 700;
 }
 
 .provider-calendar-day.selected {
-  background: var(--provider-dark-green);
+  background: var(--primary-1);
   color: white;
 }
 
@@ -586,7 +578,7 @@
 }
 
 .provider-calendar-day.other-month {
-  color: rgba(55, 66, 89, 0.3);
+  color: var(--text-muted);
 }
 
 /* Weekly View */
@@ -594,7 +586,7 @@
   display: grid;
   grid-template-columns: 60px repeat(7, 1fr);
   gap: 1px;
-  background: rgba(54, 79, 83, 0.1);
+  background: var(--border);
   border-radius: 12px;
   overflow: hidden;
 }
@@ -603,20 +595,20 @@
   padding: 16px 8px;
   text-align: center;
   font-size: 12px;
-  color: rgba(55, 66, 89, 0.6);
-  background: white;
+  color: var(--text-muted);
+  background: var(--bg-card);
 }
 
 .provider-weekly-cell {
   min-height: 60px;
-  background: white;
+  background: var(--bg-card);
   padding: 4px;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .provider-weekly-cell:hover {
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
 }
 
 .provider-weekly-cell.available {
@@ -629,16 +621,16 @@
   font-size: 11px;
   font-weight: 600;
   margin-bottom: 2px;
-  background: var(--provider-dark-green);
+  background: var(--primary-1);
   color: white;
 }
 
 /* ===== Profile Editor ===== */
 .provider-profile-card {
-  background: white;
+  background: var(--bg-card);
   border-radius: 16px;
   padding: 24px;
-  box-shadow: 0 4px 16px rgba(54, 79, 83, 0.08);
+  box-shadow: var(--shadow-sm);
   margin-bottom: 24px;
 }
 
@@ -647,7 +639,7 @@
   align-items: center;
   gap: 24px;
   padding-bottom: 24px;
-  border-bottom: 1px solid rgba(54, 79, 83, 0.1);
+  border-bottom: 1px solid var(--border);
   margin-bottom: 24px;
 }
 
@@ -659,21 +651,21 @@
   width: 120px;
   height: 120px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--provider-light-green), var(--provider-mid-green));
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 48px;
   margin-bottom: 12px;
-  border: 4px solid var(--provider-bg-card);
+  border: 4px solid var(--bg-secondary);
 }
 
 .provider-profile-avatar-btn {
   padding: 8px 16px;
   border-radius: 999px;
-  border: 2px solid var(--provider-light-green);
-  background: white;
-  color: var(--provider-mid-green);
+  border: 2px solid var(--accent-1);
+  background: var(--bg-card);
+  color: var(--accent-2);
   font-weight: 600;
   font-size: 12px;
   cursor: pointer;
@@ -681,7 +673,7 @@
 }
 
 .provider-profile-avatar-btn:hover {
-  background: var(--provider-light-green);
+  background: var(--accent-1);
   color: white;
 }
 
@@ -692,7 +684,7 @@
 .provider-profile-name {
   font-size: 24px;
   font-weight: 800;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin-bottom: 4px;
 }
 
@@ -701,7 +693,7 @@
   align-items: center;
   gap: 8px;
   font-size: 14px;
-  color: var(--provider-mid-green);
+  color: var(--accent-2);
   margin-bottom: 12px;
 }
 
@@ -717,12 +709,12 @@
 .provider-profile-stat-value {
   font-size: 20px;
   font-weight: 900;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
 }
 
 .provider-profile-stat-label {
   font-size: 11px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
   text-transform: uppercase;
 }
 
@@ -734,7 +726,7 @@
 .provider-gallery-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
@@ -791,7 +783,7 @@
 
 .provider-gallery-add {
   aspect-ratio: 1;
-  border: 2px dashed rgba(54, 79, 83, 0.3);
+  border: 2px dashed var(--border);
   border-radius: 12px;
   display: flex;
   flex-direction: column;
@@ -803,18 +795,18 @@
 }
 
 .provider-gallery-add:hover {
-  border-color: var(--provider-light-green);
-  background: rgba(133, 169, 141, 0.05);
+  border-color: var(--accent-1);
+  background: var(--bg-hover);
 }
 
 .provider-gallery-add-icon {
   font-size: 32px;
-  color: rgba(55, 66, 89, 0.4);
+  color: var(--text-muted);
 }
 
 .provider-gallery-add-text {
   font-size: 12px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
 }
 
 /* ===== Working Hours ===== */
@@ -825,7 +817,7 @@
 .provider-hours-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
@@ -840,28 +832,28 @@
   align-items: center;
   gap: 16px;
   padding: 12px 16px;
-  background: var(--provider-bg-light);
+  background: var(--bg-hover);
   border-radius: 10px;
 }
 
 .provider-hours-day-name {
   width: 100px;
   font-weight: 600;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
 }
 
 .provider-hours-toggle {
   width: 48px;
   height: 24px;
   border-radius: 999px;
-  background: rgba(55, 66, 89, 0.2);
+  background: var(--border);
   position: relative;
   cursor: pointer;
   transition: background 0.3s ease;
 }
 
 .provider-hours-toggle.active {
-  background: var(--provider-light-green);
+  background: var(--accent-1);
 }
 
 .provider-hours-toggle::after {
@@ -889,21 +881,23 @@
 
 .provider-hours-input {
   padding: 8px 12px;
-  border: 2px solid rgba(54, 79, 83, 0.15);
+  border: 2px solid var(--border);
   border-radius: 8px;
   font-size: 14px;
   width: 100px;
+  background: var(--bg-card);
+  color: var(--text-primary);
 }
 
 .provider-hours-separator {
-  color: rgba(55, 66, 89, 0.4);
+  color: var(--text-muted);
 }
 
 /* ===== Empty State ===== */
 .provider-empty-state {
   text-align: center;
   padding: 60px 20px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
 }
 
 .provider-empty-icon {
@@ -914,7 +908,7 @@
 .provider-empty-title {
   font-size: 18px;
   font-weight: 700;
-  color: var(--provider-text-dark);
+  color: var(--text-primary);
   margin-bottom: 8px;
 }
 
@@ -948,7 +942,7 @@
 }
 
 .provider-toast.info {
-  background: linear-gradient(135deg, var(--provider-info-blue), var(--provider-dark-blue));
+  background: linear-gradient(135deg, var(--info), var(--primary-2));
 }
 
 @keyframes slideInRight {

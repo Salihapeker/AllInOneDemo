@@ -1,15 +1,17 @@
 // src/services/api.js
-// Central API client and helper functions (updated with availability & pre-chat).
+// Central API client and helper functions for Django REST Framework.
 import axios from "axios";
 
+const API_URL = process.env.REACT_APP_API_URL || "http://localhost:8000/api";
+
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:8000/api",
+  baseURL: API_URL,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Token interceptor
+// Token interceptor - adds Authorization header
 api.interceptors.request.use((config) => {
   const token =
     localStorage.getItem("access_token") || localStorage.getItem("token");
@@ -17,63 +19,184 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-// --- Endpoints ---
+// Response interceptor - handle 401 redirect
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      // Clear tokens and redirect to login
+      localStorage.removeItem("access_token");
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      // Only redirect if not already on login page
+      if (window.location.pathname !== "/login") {
+        window.location.href = "/login";
+      }
+    }
+    return Promise.reject(error);
+  }
+);
+
+// ============================================
+// AUTH API
+// ============================================
+export const authAPI = {
+  login: (credentials) => api.post("/auth/login/", credentials),
+  register: (userData) => api.post("/auth/register/", userData),
+  logout: () => api.post("/auth/logout/"),
+  getMe: () => api.get("/auth/me/"),
+  forgotPassword: (email) => api.post("/auth/forgot-password/", { email }),
+  resetPassword: (data) => api.post("/auth/reset-password/", data),
+  refreshToken: (refreshToken) =>
+    api.post("/auth/token/refresh/", { refresh: refreshToken }),
+};
+
+// ============================================
+// USERS API
+// ============================================
+export const usersAPI = {
+  getAll: (params) => api.get("/users/", { params }),
+  getById: (id) => api.get(`/users/${id}/`),
+  update: (id, data) => api.put(`/users/${id}/`, data),
+  patch: (id, data) => api.patch(`/users/${id}/`, data),
+  delete: (id) => api.delete(`/users/${id}/`),
+  getProfile: () => api.get("/users/me/"),
+  updateProfile: (data) => api.patch("/users/me/", data),
+};
+
+// ============================================
+// WORKERS / PROVIDERS API
+// ============================================
+export const workersAPI = {
+  getAll: (params) => api.get("/workers/", { params }),
+  getById: (id) => api.get(`/workers/${id}/`),
+  apply: (formData) =>
+    api.post("/workers/apply/", formData, {
+      headers: { "Content-Type": "multipart/form-data" },
+    }),
+  approve: (id) => api.post(`/workers/${id}/approve/`),
+  reject: (id) => api.post(`/workers/${id}/reject/`),
+  getApplications: (params) => api.get("/workers/applications/", { params }),
+};
+
+// ============================================
+// CATEGORIES API
+// ============================================
+export const categoriesAPI = {
+  getAll: (params) => api.get("/categories/", { params }),
+  getTree: () => api.get("/categories/tree/"),
+  getById: (id) => api.get(`/categories/${id}/`),
+  create: (data) => api.post("/categories/", data),
+  update: (id, data) => api.put(`/categories/${id}/`, data),
+  delete: (id) => api.delete(`/categories/${id}/`),
+};
+
+// ============================================
+// SERVICES API
+// ============================================
+export const servicesAPI = {
+  getAll: (params) => api.get("/services/", { params }),
+  getById: (id) => api.get(`/services/${id}/`),
+  getByCategory: (categoryId) =>
+    api.get(`/categories/${categoryId}/services/`),
+  create: (data) => api.post("/services/", data),
+  update: (id, data) => api.put(`/services/${id}/`, data),
+  delete: (id) => api.delete(`/services/${id}/`),
+};
+
+// ============================================
+// APPOINTMENTS API
+// ============================================
+export const appointmentsAPI = {
+  getAll: (params) => api.get("/appointments/", { params }),
+  getMyAppointments: () => api.get("/appointments/my-appointments/"),
+  getById: (id) => api.get(`/appointments/${id}/`),
+  create: (data) => api.post("/appointments/", data),
+  update: (id, data) => api.put(`/appointments/${id}/`, data),
+  cancel: (id) => api.patch(`/appointments/${id}/cancel/`),
+  approve: (id) => api.post(`/appointments/${id}/approve/`),
+  reject: (id) => api.post(`/appointments/${id}/reject/`),
+  getProviderAppointments: (providerId) =>
+    api.get(`/providers/${providerId}/appointments/`),
+};
+
+// ============================================
+// PROVIDERS API
+// ============================================
+export const providersAPI = {
+  getAll: (params) => api.get("/providers/", { params }),
+  getById: (id) => api.get(`/providers/${id}/`),
+  getProfile: (id) => api.get(`/providers/${id}/`),
+  updateProfile: (id, data) => api.put(`/providers/${id}/`, data),
+  getAppointments: (id) => api.get(`/providers/${id}/appointments/`),
+  getAvailableSlots: (id, date) =>
+    api.get(`/providers/${id}/available-slots/`, { params: { date } }),
+  createPreChat: (id, data) => api.post(`/providers/${id}/prechat/`, data),
+};
+
+// ============================================
+// REPORTS API (Admin)
+// ============================================
+export const reportsAPI = {
+  getDashboardStats: () => api.get("/reports/dashboard/"),
+  getUserStats: (params) => api.get("/reports/users/", { params }),
+  getWorkerStats: (params) => api.get("/reports/workers/", { params }),
+  getAppointmentStats: (params) =>
+    api.get("/reports/appointments/", { params }),
+  getRevenueStats: (params) => api.get("/reports/revenue/", { params }),
+};
+
+// ============================================
+// LEGACY EXPORTS (for backward compatibility)
+// ============================================
 // Auth / user
-export const getCurrentUser = () => api.get("/auth/me/");
+export const getCurrentUser = () => authAPI.getMe();
 
 // Categories
-export const getCategories = () => api.get("/categories/tree/");
+export const getCategories = () => categoriesAPI.getTree();
 
 // Users
 export const getUserProfile = (userId) => {
-  if (!userId) return api.get("/auth/me/");
-  return api.get(`/users/${userId}/`);
+  if (!userId) return authAPI.getMe();
+  return usersAPI.getById(userId);
 };
-export const getUserAppointments = () =>
-  api.get("/appointments/my-appointments/");
-export const cancelAppointment = (id) =>
-  api.patch(`/appointments/${id}/cancel/`);
+export const getUserAppointments = () => appointmentsAPI.getMyAppointments();
+export const cancelAppointment = (id) => appointmentsAPI.cancel(id);
 
 // Services
-export const getServiceById = (id) => api.get(`/services/${id}/`);
+export const getServiceById = (id) => servicesAPI.getById(id);
 export const getServicesByCategory = (categoryId) =>
-  api.get(`/categories/${categoryId}/services/`);
+  servicesAPI.getByCategory(categoryId);
 
 // Provider
 export const getProviderProfile = (providerId) =>
-  api.get(`/providers/${providerId}/`);
+  providersAPI.getById(providerId);
 export const updateProviderProfile = (providerId, payload) =>
-  api.put(`/providers/${providerId}/`, payload);
+  providersAPI.updateProfile(providerId, payload);
 export const getProviderAppointments = (providerId) =>
-  api.get(`/providers/${providerId}/appointments/`);
+  providersAPI.getAppointments(providerId);
 export const providerRespondAppointment = (appointmentId, action) =>
   api.post(`/appointments/${appointmentId}/${action}/`);
 
 // Booking
-export const createAppointment = (payload) =>
-  api.post("/appointments/", payload);
+export const createAppointment = (payload) => appointmentsAPI.create(payload);
 
-// Availability / calendar (backend expected to return array of times for date)
-// Example backend path: GET /providers/:id/available-slots/?date=YYYY-MM-DD
+// Availability / calendar
 export const getAvailableSlots = (providerId, date) =>
-  api.get(`/providers/${providerId}/available-slots/`, { params: { date } });
+  providersAPI.getAvailableSlots(providerId, date);
 
 // Provider registration (multipart)
-export const providerRegister = (formData) =>
-  api.post("/providers/apply/", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+export const providerRegister = (formData) => workersAPI.apply(formData);
 
-// Pre-chat / quick message (ön görüşme)
+// Pre-chat / quick message
 export const createPreChat = (providerId, payload) =>
-  api.post(`/providers/${providerId}/prechat/`, payload);
+  providersAPI.createPreChat(providerId, payload);
 
 // Admin examples
-export const getAllUsers = () => api.get("/admin/users/");
-export const getWorkerApplications = () =>
-  api.get("/admin/worker-applications/");
-export const approveWorker = (id) => api.post(`/admin/workers/${id}/approve/`);
-export const rejectWorker = (id) => api.post(`/admin/workers/${id}/reject/`);
+export const getAllUsers = () => usersAPI.getAll();
+export const getWorkerApplications = () => workersAPI.getApplications();
+export const approveWorker = (id) => workersAPI.approve(id);
+export const rejectWorker = (id) => workersAPI.reject(id);
 
 // Default axios export
 export default api;
