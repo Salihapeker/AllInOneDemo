@@ -138,13 +138,13 @@ const HomePage = () => {
         .hero-section {
           text-align: center;
           padding: 80px 20px;
-          background: linear-gradient(180deg, #F9F1F1 0%, #F4EEEC 100%);
+          background: linear-gradient(180deg, var(--bg-main) 0%, var(--bg-secondary) 100%);
         }
 
         .hero-title {
           font-family: 'Playfair Display', serif;
           font-size: clamp(48px, 8vw, 72px);
-          background: linear-gradient(135deg, #364F53, #6DBF8C);
+          background: linear-gradient(135deg, var(--primary-1), var(--accent-1));
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -155,7 +155,7 @@ const HomePage = () => {
 
         .hero-subtitle {
           font-size: clamp(18px, 3vw, 24px);
-          color: rgba(47, 61, 70, 0.8);
+          color: var(--text-secondary);
           margin-bottom: 40px;
           font-weight: 500;
         }
@@ -170,27 +170,27 @@ const HomePage = () => {
         .btn-primary-large {
           padding: 16px 48px;
           font-size: 18px;
-          background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+          background: var(--gradient-primary);
           color: white;
           border: none;
           border-radius: 999px;
           font-weight: 700;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 8px 24px rgba(109, 191, 140, 0.3);
+          box-shadow: 0 8px 24px rgba(133, 169, 141, 0.3);
         }
 
         .btn-primary-large:hover {
           transform: translateY(-4px);
-          box-shadow: 0 12px 40px rgba(109, 191, 140, 0.4);
+          box-shadow: 0 12px 40px rgba(133, 169, 141, 0.4);
         }
 
         .btn-secondary-large {
           padding: 16px 48px;
           font-size: 18px;
           background: transparent;
-          color: #364F53;
-          border: 2px solid #364F53;
+          color: var(--text-primary);
+          border: 2px solid var(--primary-1);
           border-radius: 999px;
           font-weight: 700;
           cursor: pointer;
@@ -198,7 +198,7 @@ const HomePage = () => {
         }
 
         .btn-secondary-large:hover {
-          background: #364F53;
+          background: var(--primary-1);
           color: white;
           transform: translateY(-2px);
         }
@@ -207,8 +207,8 @@ const HomePage = () => {
         .home-root {
           min-height: 100vh;
           padding: 0 0 60px;
-          background: linear-gradient(180deg, #F4EEEC 0%, #f7f3f2 100%);
-          color: #2F3D46;
+          background: linear-gradient(180deg, var(--bg-secondary) 0%, var(--bg-hover) 100%);
+          color: var(--text-primary);
         }
 
         .timeline {
@@ -226,9 +226,9 @@ const HomePage = () => {
           transform: translateX(-50%);
           width: 4px;
           height: 100%;
-          background: linear-gradient(180deg, #6DBF8C, #4A9D6F);
+          background: var(--gradient-primary);
           border-radius: 4px;
-          box-shadow: 0 0 20px rgba(109, 191, 140, 0.4);
+          box-shadow: 0 0 20px rgba(133, 169, 141, 0.4);
         }
 
         .cat-node {
@@ -244,22 +244,22 @@ const HomePage = () => {
           align-items: center;
           gap: 18px;
           width: calc(50% - 50px);
-          background: linear-gradient(135deg, #364F53, #2F3D46);
+          background: var(--gradient-card);
           border-radius: 12px;
           padding: 16px 24px;
           cursor: pointer;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          box-shadow: 0 8px 24px rgba(54, 79, 83, 0.15);
+          box-shadow: var(--shadow-md);
         }
 
         .cat-main:hover {
           transform: translateY(-4px);
-          box-shadow: 0 12px 40px rgba(54, 79, 83, 0.25);
+          box-shadow: var(--shadow-lg);
         }
 
         .cat-main.open {
-          box-shadow: 0 12px 40px rgba(109, 191, 140, 0.2);
-          border: 2px solid rgba(109, 191, 140, 0.3);
+          box-shadow: 0 12px 40px rgba(133, 169, 141, 0.2);
+          border: 2px solid rgba(133, 169, 141, 0.3);
         }
 
         .cat-node.left .cat-main {
@@ -281,9 +281,9 @@ const HomePage = () => {
           display: flex;
           align-items: center;
           justify-content: center;
-          background: linear-gradient(135deg, #6DBF8C, #4A9D6F);
+          background: var(--gradient-primary);
           color: white;
-          box-shadow: 0 8px 24px rgba(109, 191, 140, 0.3);
+          box-shadow: 0 8px 24px rgba(133, 169, 141, 0.3);
           transition: transform 0.3s ease;
         }
 
@@ -358,19 +358,19 @@ const HomePage = () => {
           height: 90px;
           padding: 12px;
           border-radius: 12px;
-          background: linear-gradient(135deg, #364F53, #2F3D46);
+          background: var(--gradient-card);
           color: white;
           cursor: pointer;
           border: 2px solid transparent;
           outline: none;
           transition: all 0.3s ease;
-          box-shadow: 0 4px 16px rgba(54, 79, 83, 0.2);
+          box-shadow: var(--shadow-sm);
         }
 
         .child-tile:hover {
-          border-color: #6DBF8C;
+          border-color: var(--accent-1);
           transform: scale(1.05);
-          box-shadow: 0 8px 32px rgba(109, 191, 140, 0.4);
+          box-shadow: 0 8px 32px rgba(133, 169, 141, 0.4);
         }
 
         .child-icon {
@@ -410,8 +410,8 @@ const HomePage = () => {
           display: inline-block;
           width: 40px;
           height: 40px;
-          border: 4px solid #F4EEEC;
-          border-top-color: #6DBF8C;
+          border: 4px solid var(--bg-secondary);
+          border-top-color: var(--accent-1);
           border-radius: 50%;
           animation: spin 0.8s linear infinite;
           margin: 40px auto;

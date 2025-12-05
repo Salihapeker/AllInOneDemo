@@ -1,25 +1,13 @@
 /* ============================================
    LEGAL PAGES STYLES
    All In One 4 You - Privacy, Terms, Cookie Policy
+   Uses CSS variables for theme support
    ============================================ */
-
-/* ===== Color Variables ===== */
-:root {
-  --legal-dark-green: #364F53;
-  --legal-dark-blue: #2F3D46;
-  --legal-light-green: #85A98D;
-  --legal-mid-green: #517970;
-  --legal-bg-light: #F9F1F1;
-  --legal-bg-card: #f2d8d8;
-  --legal-icon-green: #5c8984;
-  --legal-info-blue: #545b77;
-  --legal-text-dark: #374259;
-}
 
 /* ===== Page Container ===== */
 .legal-page {
   min-height: 100vh;
-  background: var(--legal-bg-light);
+  background: var(--bg-main);
   padding: 40px 20px;
 }
 
@@ -60,13 +48,13 @@
 .legal-title {
   font-size: clamp(28px, 5vw, 40px);
   font-weight: 900;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .legal-subtitle {
   font-size: 16px;
-  color: rgba(55, 66, 89, 0.6);
+  color: var(--text-muted);
   max-width: 600px;
   margin: 0 auto;
 }
@@ -77,19 +65,19 @@
   gap: 8px;
   margin-top: 20px;
   padding: 8px 16px;
-  background: white;
+  background: var(--bg-card);
   border-radius: 999px;
   font-size: 13px;
-  color: var(--legal-mid-green);
+  color: var(--accent-2);
   font-weight: 600;
 }
 
 /* ===== Content Card ===== */
 .legal-content {
-  background: white;
+  background: var(--bg-card);
   border-radius: 24px;
   padding: 48px;
-  box-shadow: 0 8px 32px rgba(54, 79, 83, 0.1);
+  box-shadow: var(--shadow-md);
 }
 
 /* ===== Sections ===== */
@@ -104,7 +92,7 @@
 .legal-section-title {
   font-size: 22px;
   font-weight: 800;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   margin-bottom: 16px;
   display: flex;
   align-items: center;
@@ -115,7 +103,7 @@
   width: 40px;
   height: 40px;
   border-radius: 10px;
-  background: linear-gradient(135deg, var(--legal-light-green), var(--legal-mid-green));
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -125,7 +113,7 @@
 .legal-section-content {
   font-size: 15px;
   line-height: 1.8;
-  color: rgba(55, 66, 89, 0.85);
+  color: var(--text-secondary);
 }
 
 .legal-section-content p {
@@ -147,14 +135,14 @@
   display: flex;
   gap: 12px;
   padding: 12px 16px;
-  background: var(--legal-bg-light);
+  background: var(--bg-hover);
   border-radius: 12px;
   margin-bottom: 8px;
   transition: all 0.3s ease;
 }
 
 .legal-list-item:hover {
-  background: var(--legal-bg-card);
+  background: var(--bg-secondary);
   transform: translateX(4px);
 }
 
@@ -167,7 +155,7 @@
   width: 24px;
   height: 24px;
   border-radius: 50%;
-  background: linear-gradient(135deg, var(--legal-light-green), var(--legal-mid-green));
+  background: var(--gradient-primary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -178,7 +166,7 @@
 .legal-list-text {
   flex: 1;
   font-size: 14px;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
 }
 
 /* ===== Info Boxes ===== */
@@ -190,17 +178,17 @@
 
 .legal-info-box.warning {
   background: rgba(245, 158, 11, 0.1);
-  border-left: 4px solid #f59e0b;
+  border-left: 4px solid var(--warning);
 }
 
 .legal-info-box.info {
   background: rgba(84, 91, 119, 0.1);
-  border-left: 4px solid var(--legal-info-blue);
+  border-left: 4px solid var(--info);
 }
 
 .legal-info-box.success {
   background: rgba(133, 169, 141, 0.1);
-  border-left: 4px solid var(--legal-light-green);
+  border-left: 4px solid var(--accent-1);
 }
 
 .legal-info-box-title {
@@ -218,11 +206,15 @@
 
 /* ===== Contact Section ===== */
 .legal-contact {
-  background: linear-gradient(135deg, var(--legal-dark-green), var(--legal-dark-blue));
+  background: var(--gradient-card);
   border-radius: 20px;
   padding: 32px;
   margin-top: 40px;
   color: white;
+}
+
+[data-theme="dark"] .legal-contact {
+  background: linear-gradient(135deg, #364f53, #1a1f25);
 }
 
 .legal-contact-title {
@@ -277,7 +269,7 @@
 
 /* ===== Table of Contents ===== */
 .legal-toc {
-  background: var(--legal-bg-light);
+  background: var(--bg-hover);
   border-radius: 16px;
   padding: 24px;
   margin-bottom: 32px;
@@ -286,7 +278,7 @@
 .legal-toc-title {
   font-size: 16px;
   font-weight: 700;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   margin-bottom: 16px;
 }
 
@@ -301,9 +293,9 @@
   align-items: center;
   gap: 12px;
   padding: 10px 16px;
-  background: white;
+  background: var(--bg-card);
   border-radius: 10px;
-  color: var(--legal-mid-green);
+  color: var(--accent-2);
   text-decoration: none;
   font-weight: 600;
   font-size: 14px;
@@ -311,7 +303,7 @@
 }
 
 .legal-toc-item:hover {
-  background: var(--legal-light-green);
+  background: var(--accent-1);
   color: white;
   transform: translateX(4px);
 }
@@ -320,7 +312,7 @@
   width: 28px;
   height: 28px;
   border-radius: 8px;
-  background: var(--legal-bg-card);
+  background: var(--bg-secondary);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -334,7 +326,7 @@
 
 /* ===== Cookie Banner (Preview) ===== */
 .cookie-banner-preview {
-  background: var(--legal-bg-card);
+  background: var(--bg-secondary);
   border-radius: 16px;
   padding: 24px;
   margin: 24px 0;
@@ -343,15 +335,15 @@
 .cookie-banner-preview-title {
   font-size: 14px;
   font-weight: 700;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   margin-bottom: 12px;
 }
 
 .cookie-banner-demo {
-  background: white;
+  background: var(--bg-card);
   border-radius: 12px;
   padding: 20px;
-  box-shadow: 0 4px 16px rgba(54, 79, 83, 0.1);
+  box-shadow: var(--shadow-sm);
   display: flex;
   align-items: center;
   gap: 16px;
@@ -361,7 +353,7 @@
 .cookie-banner-text {
   flex: 1;
   font-size: 14px;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   min-width: 200px;
 }
 
@@ -381,7 +373,7 @@
 }
 
 .cookie-banner-btn.accept {
-  background: linear-gradient(135deg, var(--legal-light-green), var(--legal-mid-green));
+  background: var(--gradient-primary);
   color: white;
 }
 
@@ -392,12 +384,12 @@
 
 .cookie-banner-btn.settings {
   background: transparent;
-  color: var(--legal-mid-green);
-  border: 2px solid var(--legal-mid-green);
+  color: var(--accent-2);
+  border: 2px solid var(--accent-2);
 }
 
 .cookie-banner-btn.settings:hover {
-  background: var(--legal-mid-green);
+  background: var(--accent-2);
   color: white;
 }
 
@@ -412,7 +404,7 @@
 }
 
 .cookie-types-table th {
-  background: var(--legal-dark-green);
+  background: var(--primary-1);
   color: white;
   padding: 16px;
   text-align: left;
@@ -422,13 +414,13 @@
 
 .cookie-types-table td {
   padding: 14px 16px;
-  border-bottom: 1px solid rgba(54, 79, 83, 0.08);
+  border-bottom: 1px solid var(--border-light);
   font-size: 14px;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
 }
 
 .cookie-types-table tr:nth-child(even) td {
-  background: var(--legal-bg-light);
+  background: var(--bg-hover);
 }
 
 .cookie-types-table tr:last-child td {
@@ -447,12 +439,12 @@
 
 .cookie-status.required {
   background: rgba(133, 169, 141, 0.15);
-  color: var(--legal-mid-green);
+  color: var(--accent-2);
 }
 
 .cookie-status.optional {
   background: rgba(84, 91, 119, 0.15);
-  color: var(--legal-info-blue);
+  color: var(--info);
 }
 
 /* ===== Accordion (for FAQs) ===== */
@@ -461,7 +453,7 @@
 }
 
 .legal-accordion-item {
-  background: var(--legal-bg-light);
+  background: var(--bg-hover);
   border-radius: 12px;
   margin-bottom: 8px;
   overflow: hidden;
@@ -474,12 +466,12 @@
   padding: 16px 20px;
   cursor: pointer;
   font-weight: 700;
-  color: var(--legal-text-dark);
+  color: var(--text-primary);
   transition: background 0.3s ease;
 }
 
 .legal-accordion-header:hover {
-  background: var(--legal-bg-card);
+  background: var(--bg-secondary);
 }
 
 .legal-accordion-icon {
@@ -495,7 +487,7 @@
   padding: 0 20px 20px;
   font-size: 14px;
   line-height: 1.7;
-  color: rgba(55, 66, 89, 0.8);
+  color: var(--text-secondary);
 }
 
 /* ===== Print Styles ===== */
@@ -563,6 +555,6 @@
 .legal-accordion-header:focus-visible,
 .legal-toc-item:focus-visible,
 .legal-contact-item:focus-visible {
-  outline: 3px solid var(--legal-light-green);
+  outline: 3px solid var(--accent-1);
   outline-offset: 2px;
 }
