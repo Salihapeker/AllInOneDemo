@@ -51,7 +51,9 @@ export default function ReportsPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const maxAppointments = Math.max(...monthlyData.map((d) => d.appointments || 0), 1);
+  const maxAppointments = monthlyData.length > 0 
+    ? Math.max(...monthlyData.map((d) => d.appointments || 0), 1)
+    : 1;
 
   if (loading) {
     return (

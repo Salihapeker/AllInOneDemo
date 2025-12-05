@@ -11,10 +11,10 @@ function buildTree(flat) {
   flat.forEach((c) => (map[c.id] = { ...c, children: [] }));
   const roots = [];
   flat.forEach((c) => {
-    if (c.parent) {
-      map[c.parent] && map[c.parent].children.push(map[c.id]);
-    } else {
+    if (c.parent === null || c.parent === undefined) {
       roots.push(map[c.id]);
+    } else if (map[c.parent]) {
+      map[c.parent].children.push(map[c.id]);
     }
   });
   return roots;
