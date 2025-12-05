@@ -2,6 +2,7 @@ import React, { useContext } from "react";
 import { Link, NavLink } from "react-router-dom";
 import { ThemeContext } from "../../contexts/ThemeContext";
 import { I18nContext } from "../../contexts/I18nContext";
+import brandLogo from "../../assets/brand-logo.png";
 import "./Navbar.css";
 
 export default function Navbar() {
@@ -13,7 +14,7 @@ export default function Navbar() {
       <div className="container header-content">
         {/* Logo */}
         <Link to="/" className="brand">
-          <div className="brand-tile">4</div>
+          <img src={brandLogo} alt="All In One Logo" className="brand-logo" />
           <div className="brand-info">
             <span className="brand-name">ALL IN ONE</span>
             <small className="brand-tagline">{t("for_you") || "for you"}</small>

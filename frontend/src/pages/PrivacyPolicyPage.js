@@ -54,14 +54,15 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="legal-section-content">
               <p>
-                Bu gizlilik politikası, All In One 4 You platformunu kullandığınızda
-                kişisel verilerinize ne olduğunu açıklar. Kişisel veriler, sizi
-                kişisel olarak tanımlamak için kullanılabilecek tüm verilerdir.
+                Bu gizlilik politikası, All In One 4 You platformunu
+                kullandığınızda kişisel verilerinize ne olduğunu açıklar.
+                Kişisel veriler, sizi kişisel olarak tanımlamak için
+                kullanılabilecek tüm verilerdir.
               </p>
               <p>
                 Verilerinizin korunmasını ciddiye alıyoruz. Kişisel verilerinizi
-                gizli tutuyoruz ve yürürlükteki veri koruma mevzuatına (özellikle
-                DSGVO/GDPR) uygun şekilde işliyoruz.
+                gizli tutuyoruz ve yürürlükteki veri koruma mevzuatına
+                (özellikle DSGVO/GDPR) uygun şekilde işliyoruz.
               </p>
             </div>
           </section>
@@ -74,7 +75,9 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="legal-section-content">
               <div className="legal-info-box info">
-                <div className="legal-info-box-title">📍 İletişim Bilgileri</div>
+                <div className="legal-info-box-title">
+                  📍 İletişim Bilgileri
+                </div>
                 <div className="legal-info-box-content">
                   <strong>All In One 4 You GmbH</strong>
                   <br />
@@ -98,31 +101,38 @@ export default function PrivacyPolicyPage() {
               3. Topladığımız Veriler
             </h2>
             <div className="legal-section-content">
-              <p>Web sitemizde ve platformumuzda aşağıdaki kişisel verileri topluyoruz:</p>
-              
+              <p>
+                Web sitemizde ve platformumuzda aşağıdaki kişisel verileri
+                topluyoruz:
+              </p>
+
               <ul className="legal-list">
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✓</div>
                   <div className="legal-list-text">
-                    <strong>Kimlik Bilgileri:</strong> Ad, soyad, e-posta adresi, telefon numarası
+                    <strong>Kimlik Bilgileri:</strong> Ad, soyad, e-posta
+                    adresi, telefon numarası
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✓</div>
                   <div className="legal-list-text">
-                    <strong>Randevu Bilgileri:</strong> Talep edilen hizmet, tarih, saat, adres
+                    <strong>Randevu Bilgileri:</strong> Talep edilen hizmet,
+                    tarih, saat, adres
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✓</div>
                   <div className="legal-list-text">
-                    <strong>Teknik Veriler:</strong> IP adresi, tarayıcı türü, işletim sistemi
+                    <strong>Teknik Veriler:</strong> IP adresi, tarayıcı türü,
+                    işletim sistemi
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✓</div>
                   <div className="legal-list-text">
-                    <strong>Kullanım Verileri:</strong> Ziyaret edilen sayfalar, tıklama davranışları
+                    <strong>Kullanım Verileri:</strong> Ziyaret edilen sayfalar,
+                    tıklama davranışları
                   </div>
                 </li>
               </ul>
@@ -130,8 +140,8 @@ export default function PrivacyPolicyPage() {
               <div className="legal-info-box warning">
                 <div className="legal-info-box-title">⚠️ Önemli</div>
                 <div className="legal-info-box-content">
-                  Hassas kişisel veriler (sağlık bilgileri, dini inanç, vb.) tarafımızca
-                  toplanmamakta ve işlenmemektedir.
+                  Hassas kişisel veriler (sağlık bilgileri, dini inanç, vb.)
+                  tarafımızca toplanmamakta ve işlenmemektedir.
                 </div>
               </div>
             </div>
@@ -145,7 +155,7 @@ export default function PrivacyPolicyPage() {
             </h2>
             <div className="legal-section-content">
               <p>Topladığımız verileri aşağıdaki amaçlarla kullanıyoruz:</p>
-              
+
               <ul className="legal-list">
                 <li className="legal-list-item">
                   <div className="legal-list-icon">1</div>
@@ -192,52 +202,60 @@ export default function PrivacyPolicyPage() {
                 Avrupa Birliği Genel Veri Koruma Tüzüğü (DSGVO/GDPR) kapsamında
                 aşağıdaki haklara sahipsiniz:
               </p>
-              
+
               <ul className="legal-list">
                 <li className="legal-list-item">
                   <div className="legal-list-icon">📋</div>
                   <div className="legal-list-text">
-                    <strong>Bilgi Edinme Hakkı (Madde 15):</strong> İşlenen verileriniz hakkında bilgi talep edebilirsiniz.
+                    <strong>Bilgi Edinme Hakkı (Madde 15):</strong> İşlenen
+                    verileriniz hakkında bilgi talep edebilirsiniz.
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✏️</div>
                   <div className="legal-list-text">
-                    <strong>Düzeltme Hakkı (Madde 16):</strong> Yanlış verilerin düzeltilmesini talep edebilirsiniz.
+                    <strong>Düzeltme Hakkı (Madde 16):</strong> Yanlış verilerin
+                    düzeltilmesini talep edebilirsiniz.
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">🗑️</div>
                   <div className="legal-list-text">
-                    <strong>Silme Hakkı (Madde 17):</strong> Verilerinizin silinmesini talep edebilirsiniz.
+                    <strong>Silme Hakkı (Madde 17):</strong> Verilerinizin
+                    silinmesini talep edebilirsiniz.
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">🔒</div>
                   <div className="legal-list-text">
-                    <strong>İşlemenin Kısıtlanması (Madde 18):</strong> Veri işlemenin kısıtlanmasını talep edebilirsiniz.
+                    <strong>İşlemenin Kısıtlanması (Madde 18):</strong> Veri
+                    işlemenin kısıtlanmasını talep edebilirsiniz.
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">📦</div>
                   <div className="legal-list-text">
-                    <strong>Veri Taşınabilirliği (Madde 20):</strong> Verilerinizi yapılandırılmış formatta alabilirsiniz.
+                    <strong>Veri Taşınabilirliği (Madde 20):</strong>{" "}
+                    Verilerinizi yapılandırılmış formatta alabilirsiniz.
                   </div>
                 </li>
                 <li className="legal-list-item">
                   <div className="legal-list-icon">✋</div>
                   <div className="legal-list-text">
-                    <strong>İtiraz Hakkı (Madde 21):</strong> Veri işlemeye itiraz edebilirsiniz.
+                    <strong>İtiraz Hakkı (Madde 21):</strong> Veri işlemeye
+                    itiraz edebilirsiniz.
                   </div>
                 </li>
               </ul>
 
               <div className="legal-info-box success">
-                <div className="legal-info-box-title">💡 Nasıl Başvurabilirim?</div>
+                <div className="legal-info-box-title">
+                  💡 Nasıl Başvurabilirim?
+                </div>
                 <div className="legal-info-box-content">
-                  Yukarıdaki haklarınızı kullanmak için datenschutz@allinone4you.de
-                  adresine e-posta göndererek veya iletişim formu aracılığıyla
-                  bize ulaşabilirsiniz.
+                  Yukarıdaki haklarınızı kullanmak için
+                  datenschutz@allinone4you.de adresine e-posta göndererek veya
+                  iletişim formu aracılığıyla bize ulaşabilirsiniz.
                 </div>
               </div>
             </div>
@@ -247,11 +265,16 @@ export default function PrivacyPolicyPage() {
           <div className="legal-contact">
             <h3 className="legal-contact-title">📞 İletişim</h3>
             <div className="legal-contact-grid">
-              <a href="mailto:datenschutz@allinone4you.de" className="legal-contact-item">
+              <a
+                href="mailto:datenschutz@allinone4you.de"
+                className="legal-contact-item"
+              >
                 <div className="legal-contact-icon">📧</div>
                 <div>
                   <div className="legal-contact-label">E-posta</div>
-                  <div className="legal-contact-value">datenschutz@allinone4you.de</div>
+                  <div className="legal-contact-value">
+                    datenschutz@allinone4you.de
+                  </div>
                 </div>
               </a>
               <a href="tel:+491234567890" className="legal-contact-item">

@@ -8,9 +8,19 @@ export function AuthProvider({ children }) {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Token varsa kullanıcı bilgilerini al
     const token = localStorage.getItem("token");
-    if (token) {
+    const savedUser = localStorage.getItem("user");
+
+    if (token && savedUser) {
+      // Mock test modu - localStorage'dan user bilgisi al
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error("User parse hatası:", e);
+      }
+      setLoading(false);
+    } else if (token) {
+      // Gerçek API modu
       fetchUser();
     } else {
       setLoading(false);
@@ -24,6 +34,7 @@ export function AuthProvider({ children }) {
     } catch (error) {
       console.error("Kullanıcı bilgileri alınamadı:", error);
       localStorage.removeItem("token");
+      localStorage.removeItem("user");
     } finally {
       setLoading(false);
     }
@@ -32,6 +43,7 @@ export function AuthProvider({ children }) {
   const login = async (email, password) => {
     const response = await api.post("/auth/login", { email, password });
     localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
     setUser(response.data.user);
     return response.data;
   };
@@ -39,12 +51,14 @@ export function AuthProvider({ children }) {
   const register = async (userData) => {
     const response = await api.post("/auth/register", userData);
     localStorage.setItem("token", response.data.token);
+    localStorage.setItem("user", JSON.stringify(response.data.user));
     setUser(response.data.user);
     return response.data;
   };
 
   const logout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("user");
     setUser(null);
     window.location.href = "/";
   };

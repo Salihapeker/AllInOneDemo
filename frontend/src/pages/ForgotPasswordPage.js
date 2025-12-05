@@ -41,7 +41,8 @@ export default function ForgotPasswordPage() {
                 <div className="auth-icon">🔐</div>
                 <h1 className="auth-title">Parolamı Unuttum</h1>
                 <p className="auth-subtitle">
-                  E-posta adresinizi girin, size parola sıfırlama bağlantısı gönderelim.
+                  E-posta adresinizi girin, size parola sıfırlama bağlantısı
+                  gönderelim.
                 </p>
               </div>
 
@@ -67,7 +68,10 @@ export default function ForgotPasswordPage() {
                 >
                   {loading ? (
                     <>
-                      <span className="loading-spinner" style={{ width: 20, height: 20 }}></span>
+                      <span
+                        className="loading-spinner"
+                        style={{ width: 20, height: 20 }}
+                      ></span>
                       Gönderiliyor...
                     </>
                   ) : (
@@ -95,7 +99,8 @@ export default function ForgotPasswordPage() {
                 gönderildi. Lütfen gelen kutunuzu kontrol edin.
               </p>
               <p className="auth-success-hint">
-                E-posta birkaç dakika içinde ulaşmazsa spam/junk klasörünü kontrol edin.
+                E-posta birkaç dakika içinde ulaşmazsa spam/junk klasörünü
+                kontrol edin.
               </p>
               <div className="auth-success-actions">
                 <Link to="/login" className="btn btn-primary">

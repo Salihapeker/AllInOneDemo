@@ -51,7 +51,7 @@ export default function ResetPasswordPage() {
   // Password strength indicator
   const getPasswordStrength = () => {
     if (!password) return { level: 0, text: "", color: "" };
-    
+
     let strength = 0;
     if (password.length >= 8) strength++;
     if (/[A-Z]/.test(password)) strength++;
@@ -135,7 +135,7 @@ export default function ResetPasswordPage() {
                       {showPassword ? "🙈" : "👁️"}
                     </button>
                   </div>
-                  
+
                   {/* Password Strength */}
                   {password && (
                     <div style={{ marginTop: 8 }}>
@@ -156,7 +156,9 @@ export default function ResetPasswordPage() {
                           />
                         ))}
                       </div>
-                      <div style={{ fontSize: 12, color: passwordStrength.color }}>
+                      <div
+                        style={{ fontSize: 12, color: passwordStrength.color }}
+                      >
                         Parola gücü: {passwordStrength.text}
                       </div>
                     </div>
@@ -174,7 +176,9 @@ export default function ResetPasswordPage() {
                     disabled={loading}
                   />
                   {confirmPassword && password !== confirmPassword && (
-                    <div style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}>
+                    <div
+                      style={{ fontSize: 12, color: "#ef4444", marginTop: 4 }}
+                    >
                       Parolalar eşleşmiyor
                     </div>
                   )}
@@ -189,20 +193,47 @@ export default function ResetPasswordPage() {
                     marginBottom: 16,
                   }}
                 >
-                  <div style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}>
+                  <div
+                    style={{ fontSize: 13, fontWeight: 600, marginBottom: 8 }}
+                  >
                     Parola gereksinimleri:
                   </div>
-                  <ul style={{ fontSize: 12, color: "#666", margin: 0, paddingLeft: 16 }}>
-                    <li style={{ color: password.length >= 8 ? "#10b981" : "#666" }}>
+                  <ul
+                    style={{
+                      fontSize: 12,
+                      color: "#666",
+                      margin: 0,
+                      paddingLeft: 16,
+                    }}
+                  >
+                    <li
+                      style={{
+                        color: password.length >= 8 ? "#10b981" : "#666",
+                      }}
+                    >
                       En az 8 karakter
                     </li>
-                    <li style={{ color: /[A-Z]/.test(password) ? "#10b981" : "#666" }}>
+                    <li
+                      style={{
+                        color: /[A-Z]/.test(password) ? "#10b981" : "#666",
+                      }}
+                    >
                       En az 1 büyük harf
                     </li>
-                    <li style={{ color: /[0-9]/.test(password) ? "#10b981" : "#666" }}>
+                    <li
+                      style={{
+                        color: /[0-9]/.test(password) ? "#10b981" : "#666",
+                      }}
+                    >
                       En az 1 rakam
                     </li>
-                    <li style={{ color: /[^A-Za-z0-9]/.test(password) ? "#10b981" : "#666" }}>
+                    <li
+                      style={{
+                        color: /[^A-Za-z0-9]/.test(password)
+                          ? "#10b981"
+                          : "#666",
+                      }}
+                    >
                       En az 1 özel karakter (önerilen)
                     </li>
                   </ul>
@@ -217,7 +248,10 @@ export default function ResetPasswordPage() {
                 >
                   {loading ? (
                     <>
-                      <span className="loading-spinner" style={{ width: 20, height: 20 }}></span>
+                      <span
+                        className="loading-spinner"
+                        style={{ width: 20, height: 20 }}
+                      ></span>
                       Kaydediliyor...
                     </>
                   ) : (
@@ -232,7 +266,8 @@ export default function ResetPasswordPage() {
               <div className="auth-success-icon">✅</div>
               <h2 className="auth-success-title">Parola Değiştirildi!</h2>
               <p className="auth-success-text">
-                Parolanız başarıyla güncellendi. Artık yeni parolanızla giriş yapabilirsiniz.
+                Parolanız başarıyla güncellendi. Artık yeni parolanızla giriş
+                yapabilirsiniz.
               </p>
               <div className="auth-success-actions">
                 <button
