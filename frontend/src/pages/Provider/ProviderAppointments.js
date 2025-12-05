@@ -1,72 +1,39 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ProviderLayout from "../../components/provider/ProviderLayout";
+import { appointmentsAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/ProviderPanel.css";
 
-const mockAppointments = [
-  {
-    id: 1,
-    customer: { name: "Mehmet Yılmaz", email: "mehmet@example.com", phone: "+49 123 456 7890" },
-    service: "Su Tesisatı Tamiri",
-    date: "2024-05-20",
-    time: "10:00",
-    status: "pending",
-    notes: "Mutfak lavabosunda sızıntı var. Acil müdahale gerekiyor.",
-    address: "Musterstraße 123, 12345 Berlin",
-  },
-  {
-    id: 2,
-    customer: { name: "Ayşe Demir", email: "ayse@example.com", phone: "+49 234 567 8901" },
-    service: "Banyo Tesisatı",
-    date: "2024-05-20",
-    time: "14:00",
-    status: "approved",
-    notes: "Duş başlığı değişimi yapılacak.",
-    address: "Beispielweg 45, 10115 Berlin",
-  },
-  {
-    id: 3,
-    customer: { name: "Ali Kaya", email: "ali@example.com", phone: "+49 345 678 9012" },
-    service: "Mutfak Tesisatı",
-    date: "2024-05-21",
-    time: "09:00",
-    status: "pending",
-    notes: "Bulaşık makinesi bağlantısı yapılacak.",
-    address: "Hauptstraße 78, 10827 Berlin",
-  },
-  {
-    id: 4,
-    customer: { name: "Fatma Öz", email: "fatma@example.com", phone: "+49 456 789 0123" },
-    service: "Kalorifer Tamiri",
-    date: "2024-05-19",
-    time: "11:00",
-    status: "rejected",
-    notes: "Kalorifer petekleri ısınmıyor.",
-    address: "Nebenstraße 12, 10965 Berlin",
-  },
-  {
-    id: 5,
-    customer: { name: "Zeynep Ak", email: "zeynep@example.com", phone: "+49 567 890 1234" },
-    service: "Genel Kontrol",
-    date: "2024-05-22",
-    time: "15:00",
-    status: "pending",
-    notes: "Tüm su tesisatının kontrolü isteniyor.",
-    address: "Ringstraße 99, 10435 Berlin",
-  },
-];
-
 export default function ProviderAppointments() {
+  const { t } = useContext(I18nContext);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [filter, setFilter] = useState("all");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
   const [toast, setToast] = useState(null);
 
-  useEffect(() => {
-    setTimeout(() => {
-      setAppointments(mockAppointments);
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await appointmentsAPI.getMyAppointments();
+      setAppointments(response.data || []);
+    } catch (err) {
+      console.error("Randevular yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setAppointments([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showToast = (message, type = "success") => {
@@ -74,21 +41,27 @@ export default function ProviderAppointments() {
     setTimeout(() => setToast(null), 3000);
   };
 
-  const handleApprove = (id) => {
-    setAppointments((prev) =>
-      prev.map((apt) => (apt.id === id ? { ...apt, status: "approved" } : apt))
-    );
-    showToast("Randevu onaylandı! Müşteriye bildirim gönderildi.", "success");
-    setSelectedAppointment(null);
+  const handleApprove = async (id) => {
+    try {
+      await appointmentsAPI.approve(id);
+      showToast(t("save_success"), "success");
+      setSelectedAppointment(null);
+      fetchAppointments();
+    } catch (err) {
+      showToast(t("save_error"), "error");
+    }
   };
 
-  const handleReject = (id) => {
-    if (!window.confirm("Bu randevuyu reddetmek istediğinize emin misiniz?")) return;
-    setAppointments((prev) =>
-      prev.map((apt) => (apt.id === id ? { ...apt, status: "rejected" } : apt))
-    );
-    showToast("Randevu reddedildi.", "error");
-    setSelectedAppointment(null);
+  const handleReject = async (id) => {
+    if (!window.confirm(t("confirm"))) return;
+    try {
+      await appointmentsAPI.reject(id);
+      showToast(t("save_success"), "success");
+      setSelectedAppointment(null);
+      fetchAppointments();
+    } catch (err) {
+      showToast(t("save_error"), "error");
+    }
   };
 
   const filteredAppointments = appointments.filter((apt) => {
@@ -107,9 +80,9 @@ export default function ProviderAppointments() {
 
   const getStatusBadge = (status) => {
     const map = {
-      pending: { label: "⏳ Beklemede", className: "pending" },
-      approved: { label: "✓ Onaylı", className: "approved" },
-      rejected: { label: "✕ Reddedildi", className: "rejected" },
+      pending: { label: `⏳ ${t("pending")}`, className: "pending" },
+      approved: { label: `✓ ${t("approved")}`, className: "approved" },
+      rejected: { label: `✕ ${t("rejected")}`, className: "rejected" },
     };
     return map[status] || map.pending;
   };
@@ -118,38 +91,49 @@ export default function ProviderAppointments() {
 
   if (loading) {
     return (
-      <ProviderLayout title="Randevular">
+      <ProviderLayout title={t("appointments")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
       </ProviderLayout>
     );
   }
 
+  if (error) {
+    return (
+      <ProviderLayout title={t("appointments")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchAppointments}
+        />
+      </ProviderLayout>
+    );
+  }
+
   return (
-    <ProviderLayout title="Randevular">
+    <ProviderLayout title={t("appointments")}>
       {/* Stats Summary */}
       <div className="provider-stats-grid" style={{ marginBottom: 24 }}>
         <div className="provider-stat-card">
           <div className="provider-stat-icon pending">⏳</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{pendingCount}</div>
-            <div className="provider-stat-label">Bekleyen</div>
+            <div className="provider-stat-label">{t("pending")}</div>
           </div>
         </div>
         <div className="provider-stat-card">
           <div className="provider-stat-icon approved">✓</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{appointments.filter((a) => a.status === "approved").length}</div>
-            <div className="provider-stat-label">Onaylanan</div>
+            <div className="provider-stat-label">{t("approved")}</div>
           </div>
         </div>
         <div className="provider-stat-card">
           <div className="provider-stat-icon today">📅</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{appointments.length}</div>
-            <div className="provider-stat-label">Toplam</div>
+            <div className="provider-stat-label">{t("all")}</div>
           </div>
         </div>
       </div>
@@ -196,12 +180,12 @@ export default function ProviderAppointments() {
                   <div className="provider-appointment-date">
                     <div className="provider-appointment-day">{dateInfo.day}</div>
                     <div className="provider-appointment-month">{dateInfo.month}</div>
-                    <div className="provider-appointment-time">{apt.time}</div>
+                    <div className="provider-appointment-time">{apt.time || apt.time_slot}</div>
                   </div>
                   <div className="provider-appointment-info">
-                    <div className="provider-appointment-service">{apt.service}</div>
+                    <div className="provider-appointment-service">{apt.service || apt.service_name}</div>
                     <div className="provider-appointment-customer">
-                      👤 {apt.customer.name}
+                      👤 {apt.customer?.name || apt.customer_name}
                     </div>
                   </div>
                   <span className={`provider-appointment-status ${status.className}`}>
@@ -212,7 +196,7 @@ export default function ProviderAppointments() {
                       className="provider-action-btn view"
                       onClick={() => setSelectedAppointment(apt)}
                     >
-                      Detay
+                      {t("details")}
                     </button>
                     {apt.status === "pending" && (
                       <>
@@ -220,13 +204,13 @@ export default function ProviderAppointments() {
                           className="provider-action-btn approve"
                           onClick={() => handleApprove(apt.id)}
                         >
-                          Onayla
+                          {t("approve")}
                         </button>
                         <button
                           className="provider-action-btn reject"
                           onClick={() => handleReject(apt.id)}
                         >
-                          Reddet
+                          {t("reject")}
                         </button>
                       </>
                     )}
@@ -235,11 +219,11 @@ export default function ProviderAppointments() {
               );
             })
           ) : (
-            <div className="provider-empty-state">
-              <div className="provider-empty-icon">📭</div>
-              <div className="provider-empty-title">Randevu bulunamadı</div>
-              <div className="provider-empty-text">Bu filtrede randevu bulunmuyor.</div>
-            </div>
+            <EmptyState 
+              icon="📭"
+              title={t("no_appointments")}
+              message={t("no_data")}
+            />
           )}
         </div>
       </div>

@@ -1,42 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { categoriesAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/AdminPanel.css";
-
-const initialCategories = [
-  {
-    id: 1,
-    name: "EV & İNŞAAT",
-    icon: "🏠",
-    description: "Tesisat, elektrik, boya, tadilat",
-    price: null,
-    image: null,
-    parent: null,
-  },
-  { id: 11, name: "Tesisatçı", icon: "🔧", parent: 1, price: 50, description: "Su ve doğalgaz tesisatı" },
-  { id: 12, name: "Elektrikçi", icon: "💡", parent: 1, price: 45, description: "Elektrik tesisatı ve tamirat" },
-  { id: 13, name: "Boyacı", icon: "🎨", parent: 1, price: 35, description: "İç ve dış cephe boyama" },
-  { id: 14, name: "Marangoz", icon: "🪚", parent: 1, price: 55, description: "Ahşap işleri ve mobilya" },
-  {
-    id: 2,
-    name: "TEMİZLİK & BAKIM",
-    icon: "🧽",
-    description: "Ev temizliği, halı, bahçe bakımı",
-    parent: null,
-  },
-  { id: 21, name: "Ev Temizliği", icon: "🧹", parent: 2, price: 40, description: "Detaylı ev temizliği" },
-  { id: 22, name: "Bahçe Bakımı", icon: "🌿", parent: 2, price: 30, description: "Bahçe düzenleme ve bakım" },
-  { id: 23, name: "Halı Yıkama", icon: "🧼", parent: 2, price: 25, description: "Profesyonel halı yıkama" },
-  {
-    id: 3,
-    name: "ONARIM & MONTAJ",
-    icon: "🔩",
-    description: "Mobilya montaj, çilingir, klima",
-    parent: null,
-  },
-  { id: 31, name: "Mobilya Montaj", icon: "🛠️", parent: 3, price: 40, description: "Mobilya kurulum ve montaj" },
-  { id: 32, name: "Çilingir", icon: "🔐", parent: 3, price: 60, description: "Kilit ve anahtar hizmetleri" },
-  { id: 33, name: "Klima Servis", icon: "❄️", parent: 3, price: 70, description: "Klima bakım ve tamir" },
-];
 
 function buildTree(flat) {
   const map = {};
@@ -53,9 +21,11 @@ function buildTree(flat) {
 }
 
 export default function CategoryManagement() {
+  const { t } = useContext(I18nContext);
   const [categories, setCategories] = useState([]);
   const [flat, setFlat] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editingCategory, setEditingCategory] = useState(null);
   const [form, setForm] = useState({
     name: "",
@@ -67,14 +37,29 @@ export default function CategoryManagement() {
   });
   const [expandedNodes, setExpandedNodes] = useState([]);
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setFlat(initialCategories);
-      setCategories(buildTree(initialCategories));
-      setExpandedNodes(initialCategories.filter(c => !c.parent).map(c => c.id));
+  const fetchCategories = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await categoriesAPI.getAll();
+      const data = response.data || [];
+      setFlat(data);
+      setCategories(buildTree(data));
+      setExpandedNodes(data.filter(c => !c.parent).map(c => c.id));
+    } catch (err) {
+      console.error("Kategoriler yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setFlat([]);
+      setCategories([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  useEffect(() => {
+    fetchCategories();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const toggleNode = (id) => {
@@ -100,67 +85,56 @@ export default function CategoryManagement() {
     });
   };
 
-  const saveCategory = () => {
+  const saveCategory = async () => {
     if (!form.name.trim()) {
-      alert("Kategori adı gerekli.");
+      alert(t("error_occurred"));
       return;
     }
 
-    if (editingCategory) {
-      // Update existing
-      const newFlat = flat.map((c) =>
-        c.id === editingCategory.id
-          ? {
-              ...c,
-              name: form.name.trim(),
-              icon: form.icon,
-              description: form.description,
-              price: form.price ? Number(form.price) : null,
-              image: form.image,
-              parent: form.parent ? Number(form.parent) : null,
-            }
-          : c
-      );
-      setFlat(newFlat);
-      setCategories(buildTree(newFlat));
-    } else {
-      // Create new
-      const id = Math.floor(Math.random() * 10000) + 200;
-      const newCat = {
-        id,
-        name: form.name.trim(),
-        icon: form.icon || "📁",
-        description: form.description,
-        price: form.price ? Number(form.price) : null,
-        image: form.image,
-        parent: form.parent ? Number(form.parent) : null,
-      };
-      const newFlat = [...flat, newCat];
-      setFlat(newFlat);
-      setCategories(buildTree(newFlat));
+    try {
+      if (editingCategory) {
+        // Update existing
+        await categoriesAPI.update(editingCategory.id, {
+          name: form.name.trim(),
+          icon: form.icon,
+          description: form.description,
+          price: form.price ? Number(form.price) : null,
+          image: form.image,
+          parent: form.parent ? Number(form.parent) : null,
+        });
+        alert(t("save_success"));
+      } else {
+        // Create new
+        await categoriesAPI.create({
+          name: form.name.trim(),
+          icon: form.icon || "📁",
+          description: form.description,
+          price: form.price ? Number(form.price) : null,
+          image: form.image,
+          parent: form.parent ? Number(form.parent) : null,
+        });
+        alert(t("save_success"));
+      }
+      resetForm();
+      fetchCategories(); // Refresh the list
+    } catch (err) {
+      console.error("Kategori kaydedilirken hata:", err);
+      alert(t("save_error"));
     }
-    resetForm();
   };
 
-  const deleteCategory = (id) => {
-    if (!window.confirm("Bu kategoriyi silmek istediğinize emin misiniz? Alt kategoriler de silinecektir.")) {
+  const deleteCategory = async (id) => {
+    if (!window.confirm(t("confirm"))) {
       return;
     }
-    // Remove category and its children
-    const idsToRemove = [id];
-    const findChildren = (parentId) => {
-      flat.forEach((c) => {
-        if (c.parent === parentId) {
-          idsToRemove.push(c.id);
-          findChildren(c.id);
-        }
-      });
-    };
-    findChildren(id);
-    
-    const newFlat = flat.filter((c) => !idsToRemove.includes(c.id));
-    setFlat(newFlat);
-    setCategories(buildTree(newFlat));
+    try {
+      await categoriesAPI.delete(id);
+      alert(t("delete_success"));
+      fetchCategories(); // Refresh the list
+    } catch (err) {
+      console.error("Kategori silinirken hata:", err);
+      alert(t("delete_error"));
+    }
   };
 
   const renderNode = (node, level = 0) => {
@@ -207,34 +181,47 @@ export default function CategoryManagement() {
 
   if (loading) {
     return (
-      <AdminLayout title="Kategori Yönetimi">
+      <AdminLayout title={t("category_management")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
       </AdminLayout>
     );
   }
 
+  if (error) {
+    return (
+      <AdminLayout title={t("category_management")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchCategories}
+        />
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Kategori Yönetimi">
+    <AdminLayout title={t("category_management")}>
       <div style={{ display: "grid", gridTemplateColumns: "1fr 400px", gap: 24 }}>
         {/* Category Tree */}
         <div className="admin-category-tree">
           <div className="admin-table-header">
-            <h3 className="admin-table-title">📂 Kategori Ağacı</h3>
+            <h3 className="admin-table-title">📂 {t("categories")}</h3>
             <button 
               className="admin-btn admin-btn-secondary"
               onClick={() => setExpandedNodes(categories.map(c => c.id))}
             >
-              Tümünü Aç
+              {t("all")}
             </button>
           </div>
 
           {categories.length === 0 ? (
-            <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-              <p>Henüz kategori eklenmemiş.</p>
-            </div>
+            <EmptyState 
+              icon="📂"
+              title={t("no_data")}
+              message={t("no_data")}
+            />
           ) : (
             <div style={{ marginTop: 16 }}>
               {categories.map((node) => renderNode(node))}

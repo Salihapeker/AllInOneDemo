@@ -1,10 +1,15 @@
 // src/pages/Provider/ProviderDashboard.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { Link } from "react-router-dom";
 import ProviderLayout from "../../components/provider/ProviderLayout";
+import { providersAPI, appointmentsAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/ProviderPanel.css";
 
 export default function ProviderDashboard() {
+  const { t } = useContext(I18nContext);
   const [profile, setProfile] = useState(null);
   const [stats, setStats] = useState({
     today: 0,
@@ -14,59 +19,77 @@ export default function ProviderDashboard() {
   });
   const [todayAppointments, setTodayAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setProfile({
-        id: 101,
-        name: "Usta Ahmet",
-        category: "Tesisatçı",
-        region: "Berlin",
-        workingHours: "09:00 - 18:00",
-        rating: 4.8,
-        completedJobs: 127,
-      });
-      setStats({
-        today: 3,
-        pending: 5,
-        approved: 45,
-        rejected: 3,
-      });
-      setTodayAppointments([
-        {
-          id: 1,
-          customer: "Mehmet Y.",
-          service: "Su Tesisatı",
-          time: "10:00",
-          status: "approved",
-        },
-        {
-          id: 2,
-          customer: "Ayşe D.",
-          service: "Banyo Tamiri",
-          time: "14:00",
-          status: "pending",
-        },
-        {
-          id: 3,
-          customer: "Ali K.",
-          service: "Mutfak Tesisatı",
-          time: "16:30",
-          status: "approved",
-        },
-      ]);
-      setLoading(false);
-    }, 500);
-  }, []);
+    const fetchData = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Fetch provider profile and appointments
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        if (user.id) {
+          const [profileRes, appointmentsRes] = await Promise.all([
+            providersAPI.getById(user.id).catch(() => ({ data: null })),
+            appointmentsAPI.getMyAppointments().catch(() => ({ data: [] })),
+          ]);
+          
+          setProfile(profileRes.data || {
+            id: user.id,
+            name: user.name || user.full_name || t("profile"),
+            category: user.category || "",
+            region: user.region || "",
+            workingHours: user.workingHours || "",
+            rating: 0,
+            completedJobs: 0,
+          });
+          
+          const appointments = appointmentsRes.data || [];
+          const today = new Date().toISOString().split("T")[0];
+          const todayAppts = appointments.filter(a => a.date === today);
+          
+          setTodayAppointments(todayAppts);
+          setStats({
+            today: todayAppts.length,
+            pending: appointments.filter(a => a.status === "pending").length,
+            approved: appointments.filter(a => a.status === "approved").length,
+            rejected: appointments.filter(a => a.status === "rejected").length,
+          });
+        }
+      } catch (err) {
+        console.error("Dashboard verileri yüklenirken hata:", err);
+        setError(err.message || t("error_occurred"));
+        // Set empty defaults
+        setProfile(null);
+        setStats({ today: 0, pending: 0, approved: 0, rejected: 0 });
+        setTodayAppointments([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [t]);
 
   if (loading) {
     return (
       <ProviderLayout title="Dashboard">
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
+      </ProviderLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <ProviderLayout title="Dashboard">
+        <ErrorMessage 
+          message={error} 
+          onRetry={() => window.location.reload()}
+        />
       </ProviderLayout>
     );
   }
@@ -76,7 +99,7 @@ export default function ProviderDashboard() {
       {/* Welcome Card */}
       <div
         style={{
-          background: "linear-gradient(135deg, #364F53, #2F3D46)",
+          background: "var(--gradient-card)",
           borderRadius: 20,
           padding: 32,
           color: "white",
@@ -90,19 +113,19 @@ export default function ProviderDashboard() {
       >
         <div>
           <h2 style={{ fontSize: 28, fontWeight: 800, marginBottom: 8 }}>
-            Hoş geldin, {profile?.name}! 👋
+            {t("welcome_back")}, {profile?.name || t("profile")}! 👋
           </h2>
           <p style={{ opacity: 0.8, marginBottom: 16 }}>
             {profile?.category} • {profile?.region}
           </p>
           <div style={{ display: "flex", gap: 24 }}>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 900 }}>⭐ {profile?.rating}</div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Puan</div>
+              <div style={{ fontSize: 24, fontWeight: 900 }}>⭐ {profile?.rating || 0}</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>{t("rating")}</div>
             </div>
             <div>
-              <div style={{ fontSize: 24, fontWeight: 900 }}>{profile?.completedJobs}</div>
-              <div style={{ fontSize: 12, opacity: 0.7 }}>Tamamlanan İş</div>
+              <div style={{ fontSize: 24, fontWeight: 900 }}>{profile?.completedJobs || 0}</div>
+              <div style={{ fontSize: 12, opacity: 0.7 }}>{t("completed_jobs")}</div>
             </div>
           </div>
         </div>
@@ -119,7 +142,7 @@ export default function ProviderDashboard() {
               textDecoration: "none",
             }}
           >
-            Profili Düzenle
+            {t("edit_profile")}
           </Link>
         </div>
       </div>
@@ -130,7 +153,7 @@ export default function ProviderDashboard() {
           <div className="provider-stat-icon today">📅</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{stats.today}</div>
-            <div className="provider-stat-label">Bugünkü Randevu</div>
+            <div className="provider-stat-label">{t("todays_appointments")}</div>
           </div>
         </div>
 
@@ -138,7 +161,7 @@ export default function ProviderDashboard() {
           <div className="provider-stat-icon pending">⏳</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{stats.pending}</div>
-            <div className="provider-stat-label">Bekleyen Talep</div>
+            <div className="provider-stat-label">{t("pending")}</div>
           </div>
         </div>
 
@@ -146,7 +169,7 @@ export default function ProviderDashboard() {
           <div className="provider-stat-icon approved">✓</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{stats.approved}</div>
-            <div className="provider-stat-label">Onaylanan</div>
+            <div className="provider-stat-label">{t("approved")}</div>
           </div>
         </div>
 
@@ -154,7 +177,7 @@ export default function ProviderDashboard() {
           <div className="provider-stat-icon rejected">✕</div>
           <div className="provider-stat-info">
             <div className="provider-stat-value">{stats.rejected}</div>
-            <div className="provider-stat-label">Reddedilen</div>
+            <div className="provider-stat-label">{t("rejected")}</div>
           </div>
         </div>
       </div>
@@ -163,9 +186,9 @@ export default function ProviderDashboard() {
         {/* Today's Appointments */}
         <div className="provider-appointments-card">
           <div className="provider-appointments-header">
-            <h3 className="provider-appointments-title">📅 Bugünkü Randevular</h3>
-            <Link to="/provider/appointments" style={{ color: "#85A98D", fontWeight: 600, fontSize: 14 }}>
-              Tümünü Gör →
+            <h3 className="provider-appointments-title">📅 {t("todays_appointments")}</h3>
+            <Link to="/provider/appointments" style={{ color: "var(--accent-1)", fontWeight: 600, fontSize: 14 }}>
+              {t("view_all")} →
             </Link>
           </div>
           <div className="provider-appointments-list">
@@ -173,23 +196,23 @@ export default function ProviderDashboard() {
               todayAppointments.map((apt) => (
                 <div key={apt.id} className="provider-appointment-item">
                   <div className="provider-appointment-date">
-                    <div className="provider-appointment-time">{apt.time}</div>
+                    <div className="provider-appointment-time">{apt.time || apt.time_slot}</div>
                   </div>
                   <div className="provider-appointment-info">
-                    <div className="provider-appointment-service">{apt.service}</div>
-                    <div className="provider-appointment-customer">👤 {apt.customer}</div>
+                    <div className="provider-appointment-service">{apt.service || apt.service_name}</div>
+                    <div className="provider-appointment-customer">👤 {apt.customer?.name || apt.customer_name}</div>
                   </div>
                   <span className={`provider-appointment-status ${apt.status}`}>
-                    {apt.status === "approved" ? "✓ Onaylı" : "⏳ Beklemede"}
+                    {apt.status === "approved" ? `✓ ${t("approved")}` : `⏳ ${t("pending")}`}
                   </span>
                 </div>
               ))
             ) : (
-              <div className="provider-empty-state">
-                <div className="provider-empty-icon">📭</div>
-                <div className="provider-empty-title">Bugün randevu yok</div>
-                <div className="provider-empty-text">Yeni randevu talepleri için bildirimleri kontrol edin.</div>
-              </div>
+              <EmptyState 
+                icon="📭"
+                title={t("no_appointments")}
+                message={t("no_appointments")}
+              />
             )}
           </div>
         </div>
@@ -203,7 +226,7 @@ export default function ProviderDashboard() {
               alignItems: "center",
               gap: 16,
               padding: 20,
-              background: "white",
+              background: "var(--bg-card)",
               borderRadius: 16,
               textDecoration: "none",
               color: "#374259",

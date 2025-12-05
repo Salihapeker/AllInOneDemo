@@ -1,33 +1,41 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { usersAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/AdminPanel.css";
 
-const mockUsers = [
-  { id: 1, name: "Mehmet Yılmaz", email: "mehmet@example.com", role: "customer", status: "active", joinDate: "2024-01-15", appointments: 12 },
-  { id: 2, name: "Ayşe Demir", email: "ayse@example.com", role: "customer", status: "active", joinDate: "2024-02-20", appointments: 8 },
-  { id: 3, name: "Ali Kaya", email: "ali@example.com", role: "customer", status: "inactive", joinDate: "2024-03-10", appointments: 3 },
-  { id: 4, name: "Fatma Öz", email: "fatma@example.com", role: "customer", status: "active", joinDate: "2024-03-25", appointments: 15 },
-  { id: 5, name: "Hasan Can", email: "hasan@example.com", role: "customer", status: "active", joinDate: "2024-04-01", appointments: 5 },
-  { id: 6, name: "Zeynep Ak", email: "zeynep@example.com", role: "customer", status: "active", joinDate: "2024-04-15", appointments: 7 },
-  { id: 7, name: "Emre Tan", email: "emre@example.com", role: "customer", status: "inactive", joinDate: "2024-05-01", appointments: 2 },
-  { id: 8, name: "Selin Yurt", email: "selin@example.com", role: "customer", status: "active", joinDate: "2024-05-10", appointments: 9 },
-];
-
 export default function UserManagement() {
+  const { t } = useContext(I18nContext);
   const [users, setUsers] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedUser, setSelectedUser] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const usersPerPage = 5;
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setUsers(mockUsers);
+  const fetchUsers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await usersAPI.getAll();
+      setUsers(response.data || []);
+    } catch (err) {
+      console.error("Kullanıcılar yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setUsers([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  useEffect(() => {
+    fetchUsers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const filteredUsers = users.filter((user) => {
@@ -55,20 +63,31 @@ export default function UserManagement() {
 
   if (loading) {
     return (
-      <AdminLayout title="Kullanıcı Yönetimi">
+      <AdminLayout title={t("user_management")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
       </AdminLayout>
     );
   }
 
+  if (error) {
+    return (
+      <AdminLayout title={t("user_management")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchUsers}
+        />
+      </AdminLayout>
+    );
+  }
+
   return (
-    <AdminLayout title="Kullanıcı Yönetimi">
+    <AdminLayout title={t("user_management")}>
       <div className="admin-table-container">
         <div className="admin-table-header">
-          <h3 className="admin-table-title">👥 Kayıtlı Kullanıcılar ({filteredUsers.length})</h3>
+          <h3 className="admin-table-title">👥 {t("users")} ({filteredUsers.length})</h3>
           
           <div className="admin-table-actions">
             <div className="admin-search-box">
@@ -149,9 +168,11 @@ export default function UserManagement() {
         </table>
 
         {filteredUsers.length === 0 && (
-          <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-            <p>Aramanızla eşleşen kullanıcı bulunamadı.</p>
-          </div>
+          <EmptyState 
+            icon="👥"
+            title={t("no_data")}
+            message={t("no_data")}
+          />
         )}
 
         {/* Pagination */}

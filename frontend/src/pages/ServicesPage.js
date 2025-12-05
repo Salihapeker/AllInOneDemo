@@ -1,13 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import { Link } from "react-router-dom";
-import api from "../services/api";
+import { servicesAPI, categoriesAPI } from "../services/api";
+import { I18nContext } from "../contexts/I18nContext";
+import ErrorMessage from "../components/common/ErrorMessage";
 
 import "../styles/ServicesPage.css";
 
 export default function ServicesPage() {
+  const { t } = useContext(I18nContext);
   const [services, setServices] = useState([]);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("");
@@ -16,53 +20,26 @@ export default function ServicesPage() {
 
   useEffect(() => {
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const fetchData = async () => {
     try {
+      setLoading(true);
+      setError(null);
       const [servicesRes, categoriesRes] = await Promise.all([
-        api.get("/services"),
-        api.get("/categories"),
+        servicesAPI.getAll(),
+        categoriesAPI.getAll(),
       ]);
 
-      setServices(servicesRes.data);
-      setCategories(categoriesRes.data);
-    } catch (error) {
-      console.error("Veri yüklenirken hata:", error);
-      // Fallback demo data
-      setCategories([
-        { _id: "1", name: "🏠 Ev Hizmetleri", icon: "🏠" },
-        { _id: "2", name: "🔧 Tadilat", icon: "🔧" },
-        { _id: "3", name: "🧹 Temizlik", icon: "🧹" },
-        { _id: "4", name: "🌳 Bahçe Bakımı", icon: "🌳" },
-        { _id: "5", name: "🚚 Nakliye", icon: "🚚" },
-      ]);
-
-      setServices([
-        {
-          _id: "1",
-          name: "Ev Temizliği",
-          category: "3",
-          categoryName: "Temizlik",
-          price: 40,
-          duration: 120,
-          rating: 4.8,
-          image: "/images/cleaning.jpg",
-          shortDescription: "Profesyonel ev temizlik hizmeti",
-        },
-        {
-          _id: "2",
-          name: "Tesisat Onarımı",
-          category: "2",
-          categoryName: "Tadilat",
-          price: 50,
-          duration: 90,
-          rating: 4.9,
-          image: "/images/plumbing.jpg",
-          shortDescription: "Su kaçağı, tıkanıklık ve tesisat onarımları",
-        },
-        // Daha fazla demo hizmet ekleyin
-      ]);
+      setServices(servicesRes.data || []);
+      setCategories(categoriesRes.data || []);
+    } catch (err) {
+      console.error("Veri yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setServices([]);
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -103,7 +80,20 @@ export default function ServicesPage() {
     return (
       <div className="loading-container">
         <div className="loading-spinner"></div>
-        <p>Hizmetler yükleniyor...</p>
+        <p>{t("loading")}</p>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="services-page">
+        <div className="container">
+          <ErrorMessage 
+            message={error} 
+            onRetry={fetchData}
+          />
+        </div>
       </div>
     );
   }
@@ -113,10 +103,12 @@ export default function ServicesPage() {
       <div className="container">
         {/* Header */}
         <header className="page-header">
-          <h1>🛠️ Tüm Hizmetlerimiz</h1>
+          <h1>🛠️ {t("all_services")}</h1>
           <p>
-            {services.length}+ profesyonel hizmet arasından size en uygun olanı
-            bulun
+            {services.length > 0 
+              ? `${services.length}+ profesyonel hizmet arasından size en uygun olanı bulun`
+              : t("no_data")
+            }
           </p>
         </header>
 

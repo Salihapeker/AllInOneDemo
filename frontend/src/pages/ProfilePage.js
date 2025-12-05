@@ -1,6 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
 import { getUserProfile } from "../services/api";
+import { I18nContext } from "../contexts/I18nContext";
+import EmptyState from "../components/common/EmptyState";
+import ErrorMessage from "../components/common/ErrorMessage";
 
 /*
  ProfilePage
@@ -9,7 +12,10 @@ import { getUserProfile } from "../services/api";
 */
 
 export default function ProfilePage() {
+  const { t } = useContext(I18nContext);
   const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState({});
   const navigate = useNavigate();
@@ -38,28 +44,53 @@ export default function ProfilePage() {
           phone: data.phone || "",
           location: data.location || "",
         });
+        setLoading(false);
       })
-      .catch(() => {
+      .catch((err) => {
         if (!mounted) return;
-        // fallback demo
-        setProfile({
-          id: 1,
-          name: "Demo Kullanıcı",
-          email: "demo@demo",
-          phone: "+49 170 0",
-          location: "Berlin",
-        });
-        setForm({
-          name: "Demo Kullanıcı",
-          phone: "+49 170 0",
-          location: "Berlin",
-        });
+        console.error("Profil yüklenirken hata:", err);
+        setError(err.message || t("error_occurred"));
+        setProfile(null);
+        setLoading(false);
       });
     return () => (mounted = false);
-  }, [navigate]);
+  }, [navigate, t]);
 
-  if (!profile)
-    return <div className="loading-spinner card">Yükleniyor...</div>;
+  if (loading) {
+    return (
+      <div className="container" style={{ padding: 20 }}>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>{t("loading")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="container" style={{ padding: 20 }}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={() => window.location.reload()}
+        />
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="container" style={{ padding: 20 }}>
+        <EmptyState 
+          icon="👤"
+          title={t("no_data")}
+          message={t("login_required")}
+          actionLabel={t("login")}
+          actionLink="/login"
+        />
+      </div>
+    );
+  }
 
   const save = (e) => {
     e.preventDefault();

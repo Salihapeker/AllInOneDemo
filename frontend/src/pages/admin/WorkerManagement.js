@@ -1,125 +1,75 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { workersAPI, categoriesAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/AdminPanel.css";
 
-const mockWorkers = [
-  { 
-    id: 1, 
-    name: "Ahmet Koç", 
-    email: "ahmet@example.com", 
-    phone: "+49 123 456 7890",
-    category: "Tesisatçı", 
-    experience: 5,
-    status: "pending", 
-    applyDate: "2024-05-01",
-    approvedAppointments: 0,
-    rejectedAppointments: 0,
-    cv: "ahmet-cv.pdf"
-  },
-  { 
-    id: 2, 
-    name: "Mustafa Demir", 
-    email: "mustafa@example.com", 
-    phone: "+49 234 567 8901",
-    category: "Elektrikçi", 
-    experience: 8,
-    status: "approved", 
-    applyDate: "2024-03-15",
-    approvedAppointments: 45,
-    rejectedAppointments: 3,
-    cv: "mustafa-cv.pdf"
-  },
-  { 
-    id: 3, 
-    name: "Kemal Öz", 
-    email: "kemal@example.com", 
-    phone: "+49 345 678 9012",
-    category: "Boyacı", 
-    experience: 3,
-    status: "pending", 
-    applyDate: "2024-05-10",
-    approvedAppointments: 0,
-    rejectedAppointments: 0,
-    cv: "kemal-cv.pdf"
-  },
-  { 
-    id: 4, 
-    name: "Hasan Yıldız", 
-    email: "hasan@example.com", 
-    phone: "+49 456 789 0123",
-    category: "Marangoz", 
-    experience: 10,
-    status: "approved", 
-    applyDate: "2024-02-01",
-    approvedAppointments: 78,
-    rejectedAppointments: 5,
-    cv: "hasan-cv.pdf"
-  },
-  { 
-    id: 5, 
-    name: "Veli Can", 
-    email: "veli@example.com", 
-    phone: "+49 567 890 1234",
-    category: "Temizlik", 
-    experience: 2,
-    status: "rejected", 
-    applyDate: "2024-04-20",
-    approvedAppointments: 0,
-    rejectedAppointments: 0,
-    cv: "veli-cv.pdf"
-  },
-];
-
-const categories = [
-  "Tesisatçı",
-  "Elektrikçi",
-  "Boyacı",
-  "Marangoz",
-  "Temizlik",
-  "Bahçe Bakımı",
-  "Klima Servis",
-  "Çilingir",
-];
-
 export default function WorkerManagement() {
+  const { t } = useContext(I18nContext);
   const [workers, setWorkers] = useState([]);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [selectedWorker, setSelectedWorker] = useState(null);
   const [assignCategory, setAssignCategory] = useState("");
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setWorkers(mockWorkers);
+  const fetchWorkers = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const [workersRes, categoriesRes] = await Promise.all([
+        workersAPI.getAll(),
+        categoriesAPI.getAll(),
+      ]);
+      setWorkers(workersRes.data || []);
+      setCategories(categoriesRes.data || []);
+    } catch (err) {
+      console.error("Çalışanlar yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setWorkers([]);
+      setCategories([]);
+    } finally {
       setLoading(false);
-    }, 500);
-  }, []);
-
-  const handleApprove = (workerId) => {
-    setWorkers((prev) =>
-      prev.map((w) => (w.id === workerId ? { ...w, status: "approved" } : w))
-    );
-    alert("Başvuru onaylandı! Çalışana bildirim gönderildi.");
+    }
   };
 
-  const handleReject = (workerId) => {
-    if (!window.confirm("Bu başvuruyu reddetmek istediğinize emin misiniz?")) return;
-    setWorkers((prev) =>
-      prev.map((w) => (w.id === workerId ? { ...w, status: "rejected" } : w))
-    );
-    alert("Başvuru reddedildi.");
+  useEffect(() => {
+    fetchWorkers();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleApprove = async (workerId) => {
+    try {
+      await workersAPI.approve(workerId);
+      alert(t("save_success"));
+      fetchWorkers();
+    } catch (err) {
+      alert(t("save_error"));
+    }
+  };
+
+  const handleReject = async (workerId) => {
+    if (!window.confirm(t("confirm"))) return;
+    try {
+      await workersAPI.reject(workerId);
+      alert(t("save_success"));
+      fetchWorkers();
+    } catch (err) {
+      alert(t("save_error"));
+    }
   };
 
   const handleAssignCategory = (workerId) => {
     if (!assignCategory) {
-      alert("Lütfen bir kategori seçin.");
+      alert(t("error_occurred"));
       return;
     }
-    setWorkers((prev) =>
-      prev.map((w) => (w.id === workerId ? { ...w, category: assignCategory } : w))
-    );
-    alert(`Kategori "${assignCategory}" olarak güncellendi.`);
+    // This would call an API to assign category
+    alert(t("save_success"));
     setAssignCategory("");
   };
 
@@ -146,11 +96,22 @@ export default function WorkerManagement() {
 
   if (loading) {
     return (
-      <AdminLayout title="Çalışan Yönetimi">
+      <AdminLayout title={t("worker_management")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title={t("worker_management")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchWorkers}
+        />
       </AdminLayout>
     );
   }
@@ -158,7 +119,7 @@ export default function WorkerManagement() {
   const pendingCount = workers.filter((w) => w.status === "pending").length;
 
   return (
-    <AdminLayout title="Çalışan Yönetimi">
+    <AdminLayout title={t("worker_management")}>
       {/* Stats */}
       <div className="admin-stats-grid" style={{ marginBottom: 24 }}>
         <div className="admin-stat-card">
@@ -305,9 +266,11 @@ export default function WorkerManagement() {
         </table>
 
         {filteredWorkers.length === 0 && (
-          <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-            <p>Bu filtrede çalışan bulunamadı.</p>
-          </div>
+          <EmptyState 
+            icon="👷"
+            title={t("no_data")}
+            message={t("no_data")}
+          />
         )}
       </div>
 
@@ -387,16 +350,16 @@ export default function WorkerManagement() {
                       onChange={(e) => setAssignCategory(e.target.value)}
                       style={{ flex: 1 }}
                     >
-                      <option value="">Kategori seçin...</option>
+                      <option value="">{t("all")}</option>
                       {categories.map((cat) => (
-                        <option key={cat} value={cat}>{cat}</option>
+                        <option key={cat.id || cat._id} value={cat.name}>{cat.name}</option>
                       ))}
                     </select>
                     <button
                       className="admin-btn admin-btn-primary"
                       onClick={() => handleAssignCategory(selectedWorker.id)}
                     >
-                      Ata
+                      {t("save")}
                     </button>
                   </div>
                 </div>

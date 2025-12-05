@@ -1,12 +1,17 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ProviderLayout from "../../components/provider/ProviderLayout";
+import { providersAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/ProviderPanel.css";
 
 const DAYS = ["Pazartesi", "Salı", "Çarşamba", "Perşembe", "Cuma", "Cumartesi", "Pazar"];
 
 export default function ProviderProfile() {
+  const { t } = useContext(I18nContext);
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [saving, setSaving] = useState(false);
   const [activeTab, setActiveTab] = useState("info");
   const [toast, setToast] = useState(null);
@@ -31,38 +36,51 @@ export default function ProviderProfile() {
     Pazar: { active: false, start: "", end: "" },
   });
 
-  const [gallery, setGallery] = useState([
-    "https://via.placeholder.com/300x200?text=Örnek+İş+1",
-    "https://via.placeholder.com/300x200?text=Örnek+İş+2",
-    "https://via.placeholder.com/300x200?text=Örnek+İş+3",
-  ]);
+  const [gallery, setGallery] = useState([]);
+
+  const fetchProfile = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user.id) {
+        const response = await providersAPI.getById(user.id);
+        const data = response.data || {};
+        setProfile(data);
+        setFormData({
+          name: data.name || data.full_name || "",
+          email: data.email || "",
+          phone: data.phone || "",
+          category: data.category || "",
+          description: data.description || "",
+          address: data.address || data.region || "",
+        });
+        setGallery(data.gallery || []);
+      } else {
+        // No user data - show empty form
+        setProfile({
+          id: null,
+          name: "",
+          email: "",
+          rating: 0,
+          completedJobs: 0,
+          memberSince: new Date().toISOString(),
+        });
+      }
+    } catch (err) {
+      console.error("Profil yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // Show empty profile
+      setProfile(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      const mockProfile = {
-        id: 101,
-        name: "Usta Ahmet",
-        email: "ahmet@example.com",
-        phone: "+49 123 456 7890",
-        category: "Tesisatçı",
-        description: "10 yıllık deneyimli tesisatçı. Su ve doğalgaz tesisatı konusunda uzmanım. Kaliteli iş ve müşteri memnuniyeti önceliğimdir.",
-        address: "Berlin, Almanya",
-        rating: 4.8,
-        completedJobs: 127,
-        memberSince: "2023-01-15",
-      };
-      setProfile(mockProfile);
-      setFormData({
-        name: mockProfile.name,
-        email: mockProfile.email,
-        phone: mockProfile.phone,
-        category: mockProfile.category,
-        description: mockProfile.description,
-        address: mockProfile.address,
-      });
-      setLoading(false);
-    }, 500);
+    fetchProfile();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const showToast = (message, type = "success") => {
@@ -82,69 +100,86 @@ export default function ProviderProfile() {
   };
 
   const handleSaveProfile = async () => {
-    setSaving(true);
-    // Simulate API call
-    setTimeout(() => {
-      setProfile((prev) => ({ ...prev, ...formData }));
+    try {
+      setSaving(true);
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      if (user.id) {
+        await providersAPI.updateProfile(user.id, formData);
+        setProfile((prev) => ({ ...prev, ...formData }));
+        showToast(t("save_success"), "success");
+      }
+    } catch (err) {
+      showToast(t("save_error"), "error");
+    } finally {
       setSaving(false);
-      showToast("Profil başarıyla güncellendi!", "success");
-    }, 1000);
+    }
   };
 
   const handleAddImage = () => {
-    const url = prompt("Görsel URL'si girin:");
+    const url = prompt(t("enter_url"));
     if (url) {
       setGallery((prev) => [...prev, url]);
-      showToast("Görsel eklendi!", "success");
+      showToast(t("save_success"), "success");
     }
   };
 
   const handleRemoveImage = (index) => {
-    if (window.confirm("Bu görseli silmek istediğinize emin misiniz?")) {
+    if (window.confirm(t("confirm"))) {
       setGallery((prev) => prev.filter((_, i) => i !== index));
-      showToast("Görsel silindi.", "info");
+      showToast(t("delete_success"), "info");
     }
   };
 
   if (loading) {
     return (
-      <ProviderLayout title="Profil">
+      <ProviderLayout title={t("profile")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
       </ProviderLayout>
     );
   }
 
+  if (error) {
+    return (
+      <ProviderLayout title={t("profile")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchProfile}
+        />
+      </ProviderLayout>
+    );
+  }
+
   return (
-    <ProviderLayout title="Profil Ayarları">
+    <ProviderLayout title={t("profile_settings")}>
       {/* Profile Header */}
       <div className="provider-profile-card">
         <div className="provider-profile-header">
           <div className="provider-profile-avatar-section">
             <div className="provider-profile-avatar">👷</div>
-            <button className="provider-profile-avatar-btn">📷 Değiştir</button>
+            <button className="provider-profile-avatar-btn">📷 {t("change")}</button>
           </div>
           <div className="provider-profile-info">
-            <div className="provider-profile-name">{profile.name}</div>
+            <div className="provider-profile-name">{profile?.name || t("profile")}</div>
             <div className="provider-profile-category">
-              🔧 {profile.category} • 📍 {profile.address}
+              🔧 {profile?.category} • 📍 {profile?.address || formData.address}
             </div>
             <div className="provider-profile-stats">
               <div className="provider-profile-stat">
-                <div className="provider-profile-stat-value">⭐ {profile.rating}</div>
-                <div className="provider-profile-stat-label">Puan</div>
+                <div className="provider-profile-stat-value">⭐ {profile?.rating || 0}</div>
+                <div className="provider-profile-stat-label">{t("rating")}</div>
               </div>
               <div className="provider-profile-stat">
-                <div className="provider-profile-stat-value">{profile.completedJobs}</div>
-                <div className="provider-profile-stat-label">İş</div>
+                <div className="provider-profile-stat-value">{profile?.completedJobs || 0}</div>
+                <div className="provider-profile-stat-label">{t("completed_jobs")}</div>
               </div>
               <div className="provider-profile-stat">
                 <div className="provider-profile-stat-value">
-                  {new Date(profile.memberSince).getFullYear()}
+                  {profile?.memberSince ? new Date(profile.memberSince).getFullYear() : "-"}
                 </div>
-                <div className="provider-profile-stat-label">Üyelik</div>
+                <div className="provider-profile-stat-label">{t("member_since")}</div>
               </div>
             </div>
           </div>
@@ -157,30 +192,30 @@ export default function ProviderProfile() {
           className={`provider-filter-tab ${activeTab === "info" ? "active" : ""}`}
           onClick={() => setActiveTab("info")}
         >
-          👤 Bilgiler
+          👤 {t("information")}
         </button>
         <button
           className={`provider-filter-tab ${activeTab === "hours" ? "active" : ""}`}
           onClick={() => setActiveTab("hours")}
         >
-          🕐 Çalışma Saatleri
+          🕐 {t("working_hours")}
         </button>
         <button
           className={`provider-filter-tab ${activeTab === "gallery" ? "active" : ""}`}
           onClick={() => setActiveTab("gallery")}
         >
-          🖼️ Galeri ({gallery.length})
+          🖼️ {t("gallery")} ({gallery.length})
         </button>
       </div>
 
       {/* Info Tab */}
       {activeTab === "info" && (
         <div className="provider-profile-card">
-          <h4 style={{ marginBottom: 20 }}>Profil Bilgileri</h4>
+          <h4 style={{ marginBottom: 20 }}>{t("profile_info")}</h4>
           
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
             <div className="admin-form-group">
-              <label className="admin-form-label">Ad Soyad</label>
+              <label className="admin-form-label">{t("full_name")}</label>
               <input
                 type="text"
                 className="admin-form-input"

@@ -1,5 +1,8 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import ProviderLayout from "../../components/provider/ProviderLayout";
+import { appointmentsAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/ProviderPanel.css";
 
 const DAYS = ["Pzt", "Sal", "Çar", "Per", "Cum", "Cmt", "Paz"];
@@ -8,26 +11,50 @@ const MONTHS = [
   "Temmuz", "Ağustos", "Eylül", "Ekim", "Kasım", "Aralık"
 ];
 
-const mockAppointments = {
-  "2024-05-20": [{ time: "10:00", service: "Su Tesisatı" }],
-  "2024-05-22": [{ time: "14:00", service: "Banyo Tamiri" }, { time: "16:00", service: "Genel Kontrol" }],
-  "2024-05-25": [{ time: "09:00", service: "Mutfak Tesisatı" }],
-};
-
-const mockAvailability = {
-  "2024-05-21": ["09:00", "10:00", "11:00", "14:00", "15:00"],
-  "2024-05-23": ["09:00", "10:00", "11:00", "14:00", "15:00", "16:00"],
-  "2024-05-24": ["10:00", "11:00", "14:00"],
-};
-
 export default function ProviderCalendar() {
+  const { t } = useContext(I18nContext);
   const today = new Date();
   const [currentDate, setCurrentDate] = useState(new Date(today.getFullYear(), today.getMonth(), 1));
   const [viewMode, setViewMode] = useState("month"); // month or week
   const [selectedDate, setSelectedDate] = useState(null);
-  const [availability, setAvailability] = useState(mockAvailability);
+  const [availability, setAvailability] = useState({});
+  const [appointments, setAppointments] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [showAvailabilityModal, setShowAvailabilityModal] = useState(false);
   const [selectedSlots, setSelectedSlots] = useState([]);
+
+  const fetchData = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await appointmentsAPI.getMyAppointments();
+      const appts = response.data || [];
+      
+      // Group appointments by date
+      const apptsByDate = {};
+      appts.forEach(apt => {
+        const date = apt.date;
+        if (!apptsByDate[date]) apptsByDate[date] = [];
+        apptsByDate[date].push({
+          time: apt.time || apt.time_slot,
+          service: apt.service || apt.service_name,
+        });
+      });
+      setAppointments(apptsByDate);
+    } catch (err) {
+      console.error("Takvim verileri yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      setAppointments({});
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const year = currentDate.getFullYear();
   const month = currentDate.getMonth();
@@ -106,7 +133,7 @@ export default function ProviderCalendar() {
         [dateKey]: selectedSlots,
       }));
       setShowAvailabilityModal(false);
-      alert("Uygunluk zamanları kaydedildi!");
+      alert(t("save_success"));
     }
   };
 
@@ -115,8 +142,30 @@ export default function ProviderCalendar() {
     "13:00", "14:00", "15:00", "16:00", "17:00", "18:00"
   ];
 
+  if (loading) {
+    return (
+      <ProviderLayout title={t("calendar")}>
+        <div className="loading-container">
+          <div className="loading-spinner"></div>
+          <p>{t("loading")}</p>
+        </div>
+      </ProviderLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <ProviderLayout title={t("calendar")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchData}
+        />
+      </ProviderLayout>
+    );
+  }
+
   return (
-    <ProviderLayout title="Takvim">
+    <ProviderLayout title={t("calendar")}>
       <div className="provider-calendar-card">
         {/* Header */}
         <div className="provider-calendar-header">
@@ -125,16 +174,16 @@ export default function ProviderCalendar() {
           </div>
           <div className="provider-calendar-nav">
             <button className="provider-calendar-nav-btn" onClick={() => navigateMonth(-1)}>
-              ← Önceki
+              ← {t("previous")}
             </button>
             <button
               className="provider-calendar-nav-btn"
               onClick={() => setCurrentDate(new Date(today.getFullYear(), today.getMonth(), 1))}
             >
-              Bugün
+              {t("today")}
             </button>
             <button className="provider-calendar-nav-btn" onClick={() => navigateMonth(1)}>
-              Sonraki →
+              {t("next")} →
             </button>
           </div>
         </div>
@@ -145,29 +194,29 @@ export default function ProviderCalendar() {
             className={`provider-calendar-view-tab ${viewMode === "month" ? "active" : ""}`}
             onClick={() => setViewMode("month")}
           >
-            Aylık
+            {t("monthly")}
           </button>
           <button
             className={`provider-calendar-view-tab ${viewMode === "week" ? "active" : ""}`}
             onClick={() => setViewMode("week")}
           >
-            Haftalık
+            {t("weekly")}
           </button>
         </div>
 
         {/* Legend */}
         <div style={{ display: "flex", gap: 20, marginBottom: 20, fontSize: 13 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: 4, background: "#85A98D" }}></div>
-            <span>Bugün</span>
+            <div style={{ width: 12, height: 12, borderRadius: 4, background: "var(--accent-1)" }}></div>
+            <span>{t("today")}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#f59e0b" }}></div>
-            <span>Randevu var</span>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "var(--warning)" }}></div>
+            <span>{t("has_appointment")}</span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "#10b981" }}></div>
-            <span>Müsait</span>
+            <div style={{ width: 12, height: 12, borderRadius: "50%", background: "var(--success)" }}></div>
+            <span>{t("available")}</span>
           </div>
         </div>
 
@@ -184,7 +233,7 @@ export default function ProviderCalendar() {
             {/* Days */}
             {calendarDays.map((dayData, idx) => {
               const dateKey = formatDateKey(dayData.date);
-              const appointments = mockAppointments[dateKey] || [];
+              const dayAppointments = appointments[dateKey] || [];
               const isAvailable = hasAvailability(dayData.date);
 
               return (
@@ -194,7 +243,7 @@ export default function ProviderCalendar() {
                     isToday(dayData.date) ? "today" : ""
                   } ${dayData.isOtherMonth ? "other-month" : ""} ${
                     selectedDate && formatDateKey(selectedDate) === dateKey ? "selected" : ""
-                  } ${appointments.length > 0 ? "has-appointments" : ""}`}
+                  } ${dayAppointments.length > 0 ? "has-appointments" : ""}`}
                   onClick={() => handleDateClick(dayData)}
                   style={{ cursor: dayData.isOtherMonth ? "default" : "pointer" }}
                 >
@@ -208,7 +257,7 @@ export default function ProviderCalendar() {
                         width: 6,
                         height: 6,
                         borderRadius: "50%",
-                        background: "#10b981",
+                        background: "var(--success)",
                       }}
                     />
                   )}
@@ -250,8 +299,8 @@ export default function ProviderCalendar() {
                     const dateKey = formatDateKey(weekStart);
                     const dayAvailability = availability[dateKey] || [];
                     const isSlotAvailable = dayAvailability.includes(time);
-                    const appointments = mockAppointments[dateKey] || [];
-                    const hasAppt = appointments.some((a) => a.time === time);
+                    const dayAppointments = appointments[dateKey] || [];
+                    const hasAppt = dayAppointments.some((a) => a.time === time);
 
                     return (
                       <div
@@ -262,12 +311,12 @@ export default function ProviderCalendar() {
                             ? "rgba(245, 158, 11, 0.15)"
                             : isSlotAvailable
                             ? "rgba(16, 185, 129, 0.1)"
-                            : "white",
+                            : "var(--bg-card)",
                         }}
                       >
                         {hasAppt && (
                           <div className="provider-weekly-event">
-                            {appointments.find((a) => a.time === time)?.service}
+                            {dayAppointments.find((a) => a.time === time)?.service}
                           </div>
                         )}
                       </div>

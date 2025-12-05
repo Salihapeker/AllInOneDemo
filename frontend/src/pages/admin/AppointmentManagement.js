@@ -1,82 +1,48 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import AdminLayout from "../../components/admin/AdminLayout";
+import { appointmentsAPI } from "../../services/api";
+import { I18nContext } from "../../contexts/I18nContext";
+import EmptyState from "../../components/common/EmptyState";
+import ErrorMessage from "../../components/common/ErrorMessage";
 import "../../styles/AdminPanel.css";
 
-const mockAppointments = [
-  {
-    id: 1,
-    customer: { name: "Mehmet Yılmaz", email: "mehmet@example.com" },
-    worker: { name: "Ahmet Koç", category: "Tesisatçı" },
-    service: "Su Tesisatı Tamiri",
-    date: "2024-05-20",
-    time: "10:00",
-    status: "pending",
-    notes: "Mutfak lavabosunda sızıntı var.",
-  },
-  {
-    id: 2,
-    customer: { name: "Ayşe Demir", email: "ayse@example.com" },
-    worker: { name: "Mustafa Demir", category: "Elektrikçi" },
-    service: "Elektrik Arıza",
-    date: "2024-05-20",
-    time: "14:00",
-    status: "approved",
-    notes: "Oturma odasında priz çalışmıyor.",
-  },
-  {
-    id: 3,
-    customer: { name: "Ali Kaya", email: "ali@example.com" },
-    worker: { name: "Kemal Öz", category: "Boyacı" },
-    service: "İç Cephe Boyama",
-    date: "2024-05-21",
-    time: "09:00",
-    status: "pending",
-    notes: "2 oda boyatılacak.",
-  },
-  {
-    id: 4,
-    customer: { name: "Fatma Öz", email: "fatma@example.com" },
-    worker: { name: "Hasan Yıldız", category: "Marangoz" },
-    service: "Mobilya Montaj",
-    date: "2024-05-19",
-    time: "11:00",
-    status: "rejected",
-    notes: "Dolap montajı yapılacak.",
-  },
-  {
-    id: 5,
-    customer: { name: "Zeynep Ak", email: "zeynep@example.com" },
-    worker: { name: "Ahmet Koç", category: "Tesisatçı" },
-    service: "Banyo Tesisatı",
-    date: "2024-05-22",
-    time: "15:00",
-    status: "approved",
-    notes: "Duş başlığı değişimi.",
-  },
-];
-
 export default function AppointmentManagement() {
+  const { t } = useContext(I18nContext);
   const [appointments, setAppointments] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [statusFilter, setStatusFilter] = useState("all");
   const [dateFilter, setDateFilter] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const [selectedAppointment, setSelectedAppointment] = useState(null);
 
-  useEffect(() => {
-    // Simulate API call
-    setTimeout(() => {
-      setAppointments(mockAppointments);
+  const fetchAppointments = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await appointmentsAPI.getAll();
+      setAppointments(response.data || []);
+    } catch (err) {
+      console.error("Randevular yüklenirken hata:", err);
+      setError(err.message || t("error_occurred"));
+      // No mock data - show empty state
+      setAppointments([]);
+    } finally {
       setLoading(false);
-    }, 500);
+    }
+  };
+
+  useEffect(() => {
+    fetchAppointments();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const categories = [...new Set(mockAppointments.map((a) => a.worker.category))];
+  const categories = [...new Set(appointments.map((a) => a.worker?.category).filter(Boolean))];
 
   const filteredAppointments = appointments.filter((apt) => {
     const matchesStatus = statusFilter === "all" || apt.status === statusFilter;
     const matchesDate = !dateFilter || apt.date === dateFilter;
-    const matchesCategory = !categoryFilter || apt.worker.category === categoryFilter;
+    const matchesCategory = !categoryFilter || apt.worker?.category === categoryFilter;
     return matchesStatus && matchesDate && matchesCategory;
   });
 
@@ -98,20 +64,38 @@ export default function AppointmentManagement() {
     return statusMap[status] || statusMap.pending;
   };
 
-  const handleStatusChange = (id, newStatus) => {
-    setAppointments((prev) =>
-      prev.map((apt) => (apt.id === id ? { ...apt, status: newStatus } : apt))
-    );
-    alert(`Randevu durumu "${newStatus === "approved" ? "Onaylı" : "Reddedildi"}" olarak güncellendi.`);
+  const handleStatusChange = async (id, newStatus) => {
+    try {
+      if (newStatus === "approved") {
+        await appointmentsAPI.approve(id);
+      } else {
+        await appointmentsAPI.reject(id);
+      }
+      alert(t("save_success"));
+      fetchAppointments();
+    } catch (err) {
+      alert(t("save_error"));
+    }
   };
 
   if (loading) {
     return (
-      <AdminLayout title="Randevu Yönetimi">
+      <AdminLayout title={t("appointment_management")}>
         <div className="loading-container">
           <div className="loading-spinner"></div>
-          <p>Yükleniyor...</p>
+          <p>{t("loading")}</p>
         </div>
+      </AdminLayout>
+    );
+  }
+
+  if (error) {
+    return (
+      <AdminLayout title={t("appointment_management")}>
+        <ErrorMessage 
+          message={error} 
+          onRetry={fetchAppointments}
+        />
       </AdminLayout>
     );
   }
@@ -120,7 +104,7 @@ export default function AppointmentManagement() {
   const approvedCount = appointments.filter((a) => a.status === "approved").length;
 
   return (
-    <AdminLayout title="Randevu Yönetimi">
+    <AdminLayout title={t("appointment_management")}>
       {/* Stats */}
       <div className="admin-stats-grid" style={{ marginBottom: 24 }}>
         <div className="admin-stat-card">
@@ -128,7 +112,7 @@ export default function AppointmentManagement() {
             <div className="admin-stat-icon pending">⏳</div>
           </div>
           <div className="admin-stat-value">{pendingCount}</div>
-          <div className="admin-stat-label">Bekleyen</div>
+          <div className="admin-stat-label">{t("pending")}</div>
         </div>
         <div className="admin-stat-card">
           <div className="admin-stat-header">
@@ -293,9 +277,11 @@ export default function AppointmentManagement() {
         </table>
 
         {filteredAppointments.length === 0 && (
-          <div style={{ textAlign: "center", padding: 40, color: "#666" }}>
-            <p>Bu filtrede randevu bulunamadı.</p>
-          </div>
+          <EmptyState 
+            icon="📅"
+            title={t("no_data")}
+            message={t("no_appointments")}
+          />
         )}
       </div>
 

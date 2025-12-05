@@ -1,6 +1,10 @@
 // src/pages/HomePage.js
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { useNavigate } from "react-router-dom";
+import { categoriesAPI } from "../services/api";
+import { I18nContext } from "../contexts/I18nContext";
+import EmptyState from "../components/common/EmptyState";
+import ErrorMessage from "../components/common/ErrorMessage";
 
 /*
   Updated HomePage:
@@ -9,6 +13,7 @@ import { useNavigate } from "react-router-dom";
   - Clicking a child (leaf) navigates to /services/:id (existing ServicesDetailPage).
   - Central timeline with alternating left/right categories
   - Smooth animations and transitions
+  - NO MOCK DATA - fetches from API
 */
 
 const CategoryNode = ({ cat, isOpen, onToggle, onChildClick, index }) => {
@@ -63,62 +68,32 @@ const CategoryNode = ({ cat, isOpen, onToggle, onChildClick, index }) => {
 };
 
 const HomePage = () => {
+  const { t } = useContext(I18nContext);
   const [categories, setCategories] = useState([]);
   const [openIds, setOpenIds] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Mock data until backend API is available.
-    setCategories([
-      {
-        id: 1,
-        name: "EV & İNŞAAT",
-        icon: "🏠",
-        description: "Tesisat, elektrik, boya, tadilat",
-        children: [
-          { id: 11, name: "Tesisatçı", icon: "🔧" },
-          { id: 12, name: "Elektrikçi", icon: "💡" },
-          { id: 13, name: "Boyacı", icon: "🎨" },
-          { id: 14, name: "Marangoz", icon: "🪚" },
-        ],
-      },
-      {
-        id: 2,
-        name: "TEMİZLİK & BAKIM",
-        icon: "🧽",
-        description: "Ev temizliği, halı, bahçe bakımı",
-        children: [
-          { id: 21, name: "Ev Temizliği", icon: "🧹" },
-          { id: 22, name: "Bahçe Bakımı", icon: "🌿" },
-          { id: 23, name: "Halı Yıkama", icon: "🧼" },
-        ],
-      },
-      {
-        id: 3,
-        name: "ONARIM & MONTAJ",
-        icon: "🔩",
-        description: "Mobilya montaj, çilingir, klima",
-        children: [
-          { id: 31, name: "Mobilya Montaj", icon: "🛠️" },
-          { id: 32, name: "Çilingir", icon: "🔐" },
-          { id: 33, name: "Klima Servis", icon: "❄️" },
-        ],
-      },
-      {
-        id: 4,
-        name: "SERVİSLER",
-        icon: "🧰",
-        description: "Bakım, kontrol, acil müdahale",
-        children: [
-          { id: 41, name: "Genel Bakım", icon: "🛎️" },
-          { id: 42, name: "Periyodik Kontrol", icon: "📋" },
-          { id: 43, name: "Acil Müdahale", icon: "🚨" },
-        ],
-      },
-    ]);
-    setLoading(false);
-  }, []);
+    const fetchCategories = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const response = await categoriesAPI.getTree();
+        setCategories(response.data || []);
+      } catch (err) {
+        console.error("Kategoriler yüklenirken hata:", err);
+        setError(err.message || t("error_occurred"));
+        // No mock data - show empty state
+        setCategories([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchCategories();
+  }, [t]);
 
   const toggleOpen = (id) => {
     setOpenIds((prev) =>
@@ -477,14 +452,14 @@ const HomePage = () => {
               onClick={() =>
                 document
                   .querySelector(".timeline")
-                  .scrollIntoView({ behavior: "smooth" })
+                  ?.scrollIntoView({ behavior: "smooth" })
               }
             >
-              Hizmetleri Keşfet
+              {t("services")}
             </button>
             <button
               className="btn-secondary-large"
-              onClick={() => navigate("/provider/dashboard")}
+              onClick={() => navigate("/apply")}
             >
               Usta Olarak Katıl
             </button>
@@ -497,8 +472,19 @@ const HomePage = () => {
             {loading ? (
               <div style={{ textAlign: "center" }}>
                 <div className="loading-spinner" />
-                <p>Yükleniyor...</p>
+                <p>{t("loading")}</p>
               </div>
+            ) : error ? (
+              <ErrorMessage 
+                message={error} 
+                onRetry={() => window.location.reload()}
+              />
+            ) : categories.length === 0 ? (
+              <EmptyState 
+                icon="📂"
+                title={t("no_data")}
+                message={t("no_data")}
+              />
             ) : (
               categories.map((cat, idx) => {
                 const isOpen = openIds.includes(cat.id);
@@ -520,7 +506,7 @@ const HomePage = () => {
           <div className="cta-section">
             <button
               className="btn-primary-large"
-              onClick={() => navigate("/provider/dashboard")}
+              onClick={() => navigate("/apply")}
             >
               USTA MISINIZ? HEMEN BAŞVURUN
             </button>

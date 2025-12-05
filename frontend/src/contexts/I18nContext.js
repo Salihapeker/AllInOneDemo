@@ -56,6 +56,10 @@ const TRANSLATIONS = {
     upcoming_appointments: "Yaklaşan Randevular",
     past_appointments: "Geçmiş Randevular",
     no_appointments: "Henüz randevunuz bulunmuyor.",
+    has_appointment: "Randevu var",
+    available: "Müsait",
+    details: "Detay",
+    view_all: "Tümünü Gör",
     
     // Admin
     admin_dashboard: "Admin Paneli",
@@ -84,6 +88,17 @@ const TRANSLATIONS = {
     manage_appointments: "Randevuları Yönet",
     view_requests: "Talepleri Görüntüle",
     set_availability: "Uygunluk Ayarla",
+    profile_settings: "Profil Ayarları",
+    profile_info: "Profil Bilgileri",
+    member_since: "Üyelik",
+    information: "Bilgiler",
+    gallery: "Galeri",
+    change: "Değiştir",
+    enter_url: "URL girin",
+    today: "Bugün",
+    previous: "Önceki",
+    monthly: "Aylık",
+    weekly: "Haftalık",
     
     // Common
     save: "Kaydet",
@@ -182,6 +197,10 @@ const TRANSLATIONS = {
     upcoming_appointments: "Kommende Termine",
     past_appointments: "Vergangene Termine",
     no_appointments: "Sie haben noch keine Termine.",
+    has_appointment: "Termin vorhanden",
+    available: "Verfügbar",
+    details: "Details",
+    view_all: "Alle anzeigen",
     
     // Admin
     admin_dashboard: "Admin-Dashboard",
@@ -210,6 +229,17 @@ const TRANSLATIONS = {
     manage_appointments: "Termine verwalten",
     view_requests: "Anfragen anzeigen",
     set_availability: "Verfügbarkeit festlegen",
+    profile_settings: "Profileinstellungen",
+    profile_info: "Profilinformationen",
+    member_since: "Mitglied seit",
+    information: "Informationen",
+    gallery: "Galerie",
+    change: "Ändern",
+    enter_url: "URL eingeben",
+    today: "Heute",
+    previous: "Zurück",
+    monthly: "Monatlich",
+    weekly: "Wöchentlich",
     
     // Common
     save: "Speichern",
@@ -308,6 +338,10 @@ const TRANSLATIONS = {
     upcoming_appointments: "Upcoming Appointments",
     past_appointments: "Past Appointments",
     no_appointments: "You don't have any appointments yet.",
+    has_appointment: "Has appointment",
+    available: "Available",
+    details: "Details",
+    view_all: "View All",
     
     // Admin
     admin_dashboard: "Admin Dashboard",
@@ -336,6 +370,17 @@ const TRANSLATIONS = {
     manage_appointments: "Manage Appointments",
     view_requests: "View Requests",
     set_availability: "Set Availability",
+    profile_settings: "Profile Settings",
+    profile_info: "Profile Information",
+    member_since: "Member since",
+    information: "Information",
+    gallery: "Gallery",
+    change: "Change",
+    enter_url: "Enter URL",
+    today: "Today",
+    previous: "Previous",
+    monthly: "Monthly",
+    weekly: "Weekly",
     
     // Common
     save: "Save",
