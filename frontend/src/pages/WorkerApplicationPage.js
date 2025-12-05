@@ -1,5 +1,7 @@
-import React, { useState } from "react";
-import { Link } from "react-router-dom";
+import React, { useState, useContext, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { AuthContext } from "../contexts/AuthContext";
+import { workersAPI } from "../services/api";
 import "../styles/LegalPages.css";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -18,9 +20,13 @@ const categories = [
 ];
 
 export default function WorkerApplicationPage() {
+  const { user, loading: authLoading } = useContext(AuthContext);
+  const navigate = useNavigate();
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const [applicationStatus, setApplicationStatus] = useState(null);
+  const [checkingStatus, setCheckingStatus] = useState(true);
   const [formData, setFormData] = useState({
     // Personal Info
     firstName: "",
@@ -48,6 +54,46 @@ export default function WorkerApplicationPage() {
     privacyAccepted: false,
   });
   const [errors, setErrors] = useState({});
+
+  // Redirect to register if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate("/register?redirect=/apply&role=provider");
+    }
+  }, [user, authLoading, navigate]);
+
+  // Redirect to provider dashboard if already a provider
+  useEffect(() => {
+    if (user?.role === "provider") {
+      navigate("/provider/dashboard");
+    }
+  }, [user, navigate]);
+
+  // Check for existing application status
+  useEffect(() => {
+    const checkApplicationStatus = async () => {
+      if (!user) {
+        setCheckingStatus(false);
+        return;
+      }
+      
+      try {
+        const response = await workersAPI.getMyApplication();
+        setApplicationStatus(response.data);
+      } catch {
+        // No existing application, show form
+        setApplicationStatus(null);
+      } finally {
+        setCheckingStatus(false);
+      }
+    };
+
+    if (user && user.role !== "provider") {
+      checkApplicationStatus();
+    } else {
+      setCheckingStatus(false);
+    }
+  }, [user]);
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -124,6 +170,90 @@ export default function WorkerApplicationPage() {
       window.scrollTo(0, 0);
     }, 2000);
   };
+
+  // Loading state while checking auth
+  if (authLoading || checkingStatus) {
+    return (
+      <div className="legal-page">
+        <div className="legal-container" style={{ maxWidth: 600 }}>
+          <div className="legal-content" style={{ textAlign: "center", padding: 60 }}>
+            <div className="loading-spinner" style={{ 
+              width: 48, 
+              height: 48, 
+              border: "4px solid #ddd",
+              borderTopColor: "#85A98D",
+              borderRadius: "50%",
+              animation: "spin 0.8s linear infinite",
+              margin: "0 auto 24px"
+            }} />
+            <p style={{ fontSize: 16, color: "#666" }}>Yükleniyor...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Redirect happens via useEffect, return null while redirecting
+  if (!user) {
+    return null;
+  }
+
+  // Show pending application status
+  if (applicationStatus?.status === "pending") {
+    return (
+      <div className="legal-page">
+        <div className="legal-container" style={{ maxWidth: 600 }}>
+          <div className="application-status" style={{ textAlign: "center", padding: 60 }}>
+            <div className="status-icon" style={{ fontSize: 64, marginBottom: 24 }}>⏳</div>
+            <h2 style={{ fontSize: 24, marginBottom: 16, color: "var(--text-primary)" }}>Başvurunuz İnceleniyor</h2>
+            <p style={{ color: "var(--text-secondary)", marginBottom: 12 }}>
+              Başvurunuz {applicationStatus.createdAt ? new Date(applicationStatus.createdAt).toLocaleDateString("tr-TR") : ""} tarihinde alındı.
+            </p>
+            <p style={{ color: "var(--text-secondary)", marginBottom: 32 }}>
+              En kısa sürede size dönüş yapılacaktır.
+            </p>
+            <Link to="/" className="btn btn-primary">
+              Ana Sayfaya Dön
+            </Link>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show rejected application status
+  if (applicationStatus?.status === "rejected") {
+    return (
+      <div className="legal-page">
+        <div className="legal-container" style={{ maxWidth: 600 }}>
+          <div className="application-status rejected" style={{ 
+            textAlign: "center", 
+            padding: 60,
+            background: "rgba(239, 68, 68, 0.05)",
+            borderRadius: 16,
+            border: "1px solid rgba(239, 68, 68, 0.2)"
+          }}>
+            <div className="status-icon" style={{ fontSize: 64, marginBottom: 24 }}>❌</div>
+            <h2 style={{ fontSize: 24, marginBottom: 16, color: "var(--text-primary)" }}>Başvurunuz Reddedildi</h2>
+            <p style={{ color: "var(--text-secondary)", marginBottom: 12 }}>
+              Maalesef başvurunuz onaylanmadı.
+            </p>
+            {applicationStatus.rejectionReason && (
+              <p style={{ color: "var(--text-secondary)", marginBottom: 24 }}>
+                Sebep: {applicationStatus.rejectionReason}
+              </p>
+            )}
+            <button 
+              className="btn btn-primary"
+              onClick={() => setApplicationStatus(null)}
+            >
+              Yeniden Başvur
+            </button>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (submitted) {
     return (

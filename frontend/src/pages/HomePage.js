@@ -484,7 +484,7 @@ const HomePage = () => {
             </button>
             <button
               className="btn-secondary-large"
-              onClick={() => navigate("/provider/dashboard")}
+              onClick={() => navigate("/apply")}
             >
               Usta Olarak Katıl
             </button>
@@ -520,7 +520,7 @@ const HomePage = () => {
           <div className="cta-section">
             <button
               className="btn-primary-large"
-              onClick={() => navigate("/provider/dashboard")}
+              onClick={() => navigate("/apply")}
             >
               USTA MISINIZ? HEMEN BAŞVURUN
             </button>

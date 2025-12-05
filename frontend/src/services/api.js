@@ -75,8 +75,9 @@ export const workersAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   approve: (id) => api.post(`/workers/${id}/approve/`),
-  reject: (id) => api.post(`/workers/${id}/reject/`),
+  reject: (id, reason) => api.post(`/workers/${id}/reject/`, { reason }),
   getApplications: (params) => api.get("/workers/applications/", { params }),
+  getMyApplication: () => api.get("/workers/my-application/"),
 };
 
 // ============================================
@@ -144,6 +145,26 @@ export const reportsAPI = {
   getAppointmentStats: (params) =>
     api.get("/reports/appointments/", { params }),
   getRevenueStats: (params) => api.get("/reports/revenue/", { params }),
+};
+
+// ============================================
+// WORKER APPLICATION API (Convenience wrapper)
+// ============================================
+export const workerApplicationAPI = {
+  // Submit new application
+  submit: (formData) => workersAPI.apply(formData),
+  
+  // Get current user's application status
+  getMyApplication: () => workersAPI.getMyApplication(),
+  
+  // Admin: Get all applications
+  getAll: (params) => workersAPI.getApplications(params),
+  
+  // Admin: Approve application
+  approve: (id) => workersAPI.approve(id),
+  
+  // Admin: Reject application with reason
+  reject: (id, reason) => workersAPI.reject(id, reason),
 };
 
 // ============================================

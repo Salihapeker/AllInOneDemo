@@ -1,10 +1,13 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext"; // ✅ ../ oldu
 import "../styles/AuthPages.css"; // ✅ .. / oldu
 
 export default function RegisterPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/customer/dashboard";
+  const intendedRole = searchParams.get("role"); // "provider" olabilir
   const { register } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     name: "",
@@ -23,7 +26,7 @@ export default function RegisterPage() {
 
     try {
       await register(formData);
-      navigate("/customer/dashboard");
+      navigate(redirectUrl);
     } catch (err) {
       setError(err.response?.data?.message || "Kayıt başarısız.");
     } finally {
@@ -39,6 +42,26 @@ export default function RegisterPage() {
             <h1>📝 Kayıt Ol</h1>
             <p>Yeni hesap oluşturun</p>
           </div>
+
+          {intendedRole === "provider" && (
+            <div className="info-banner" style={{
+              background: "rgba(133, 169, 141, 0.1)",
+              border: "1px solid rgba(133, 169, 141, 0.3)",
+              borderRadius: 12,
+              padding: "16px 20px",
+              marginBottom: 24,
+              color: "var(--text-primary)",
+              display: "flex",
+              alignItems: "center",
+              gap: 12
+            }}>
+              <span style={{ fontSize: 20 }}>ℹ️</span>
+              <span style={{ fontSize: 14, lineHeight: 1.5 }}>
+                Hizmet vermek için önce kayıt olmanız gerekmektedir. 
+                Kayıt olduktan sonra başvuru formuna yönlendirileceksiniz.
+              </span>
+            </div>
+          )}
 
           <form onSubmit={handleSubmit} className="auth-form">
             {error && <div className="error-alert">{error}</div>}

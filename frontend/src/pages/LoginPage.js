@@ -1,10 +1,12 @@
 import React, { useState, useContext } from "react";
-import { useNavigate, Link } from "react-router-dom";
+import { useNavigate, Link, useSearchParams } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext"; // ✅ .. / oldu
 import "../styles/AuthPages.css"; // ✅ ../ oldu
 
 export default function LoginPage() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const redirectUrl = searchParams.get("redirect") || "/customer/dashboard";
   const { login } = useContext(AuthContext);
   const [formData, setFormData] = useState({
     email: "",
@@ -20,7 +22,7 @@ export default function LoginPage() {
 
     try {
       await login(formData.email, formData.password);
-      navigate("/customer/dashboard");
+      navigate(redirectUrl);
     } catch (err) {
       setError(err.response?.data?.message || "Giriş başarısız.");
     } finally {
