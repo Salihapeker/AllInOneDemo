@@ -75,7 +75,7 @@ export const workersAPI = {
       headers: { "Content-Type": "multipart/form-data" },
     }),
   approve: (id) => api.post(`/workers/${id}/approve/`),
-  reject: (id, reason) => api.post(`/workers/${id}/reject/`, { reason }),
+  reject: (id, reason = "") => api.post(`/workers/${id}/reject/`, { reason }),
   getApplications: (params) => api.get("/workers/applications/", { params }),
   getMyApplication: () => api.get("/workers/my-application/"),
 };

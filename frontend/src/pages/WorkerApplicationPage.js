@@ -1,7 +1,7 @@
 import React, { useState, useContext, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { AuthContext } from "../contexts/AuthContext";
-import { workersAPI } from "../services/api";
+import { workerApplicationAPI } from "../services/api";
 import "../styles/LegalPages.css";
 
 const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB
@@ -78,10 +78,10 @@ export default function WorkerApplicationPage() {
       }
       
       try {
-        const response = await workersAPI.getMyApplication();
+        const response = await workerApplicationAPI.getMyApplication();
         setApplicationStatus(response.data);
-      } catch {
-        // No existing application, show form
+      } catch (error) {
+        // 404 or error means no existing application - show form
         setApplicationStatus(null);
       } finally {
         setCheckingStatus(false);
